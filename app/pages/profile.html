@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي — Mon Profil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/profile.css">
+</head>
+<body>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="main-container" id="mainContainer" style="padding-top:0;">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar">
+        <h2 data-ar="القائمة" data-fr="Menu">القائمة</h2>
+
+        <div class="menu-item active" onclick="showSection('profile')">
+            <i class="fas fa-user-circle"></i>
+            <span data-ar="الملف الشخصي" data-fr="Mon profil">الملف الشخصي</span>
+        </div>
+        <div class="menu-item" onclick="showSection('security')">
+            <i class="fas fa-lock"></i>
+            <span data-ar="الأمان" data-fr="Sécurité">الأمان</span>
+        </div>
+        <div class="menu-item" onclick="showSection('activity')">
+            <i class="fas fa-history"></i>
+            <span data-ar="سجل النشاط" data-fr="Activité">سجل النشاط</span>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <button id="langToggleBtn" onclick="toggleLang()" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid var(--primary,#1C4B2D);background:transparent;color:var(--primary,#1C4B2D);cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;">
+            <i class="fas fa-language"></i>
+            <span id="langBtnLabel">Français</span>
+        </button>
+
+        <button onclick="window.location.href='Responsable.html'" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid #e53e3e;background:transparent;color:#e53e3e;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;margin-top:12px;">
+            <i class="fas fa-arrow-left"></i>
+            <span data-ar="رجوع للوحة التحكم" data-fr="Retour au tableau de bord">رجوع للوحة التحكم</span>
+        </button>
+    </div>
+
+    <!-- ===== CONTENT ===== -->
+    <div class="content">
+
+        <!-- ===== SECTION: PROFILE ===== -->
+        <div id="section-profile" class="profile-section active">
+
+            <!-- Header -->
+            <div class="page-header" style="margin-bottom:30px;">
+                <div>
+                    <h2 style="font-size:26px;font-weight:800;color:#0B2D1C;">
+                        <i class="fas fa-user-circle" style="color:#D4AF37;margin-left:10px;"></i>
+                        <span data-ar="الملف الشخصي" data-fr="Mon Profil">الملف الشخصي</span>
+                    </h2>
+                    <p style="color:#1C4B2D;opacity:0.7;font-size:14px;margin-top:5px;" data-ar="إدارة معلوماتك الشخصية" data-fr="Gérez vos informations personnelles">إدارة معلوماتك الشخصية</p>
+                </div>
+                <button class="profile-edit-btn" id="editToggleBtn" onclick="toggleEdit()">
+                    <i class="fas fa-edit"></i>
+                    <span data-ar="تعديل" data-fr="Modifier">تعديل</span>
+                </button>
+            </div>
+
+            <!-- Avatar Card -->
+            <div class="avatar-card">
+                <div class="avatar-circle" id="avatarCircle">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="avatar-info">
+                    <h3 id="displayFullName">— —</h3>
+                    <span class="role-badge" id="displayRole">—</span>
+                </div>
+                <div class="avatar-upload" id="avatarUploadBtn" style="display:none;">
+                    <label for="avatarInput" style="cursor:pointer;">
+                        <i class="fas fa-camera"></i>
+                        <span data-ar="تغيير الصورة" data-fr="Changer la photo">تغيير الصورة</span>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="handleAvatarChange(event)">
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+
+                <!-- Nom -->
+                <div class="info-card">
+                    <div class="info-card-icon"><i class="fas fa-user"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="الاسم" data-fr="Nom">الاسم</label>
+                        <span class="info-value" id="view-nom">—</span>
+                        <input class="info-input" id="edit-nom" type="text" placeholder="Nom" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Prénom -->
+                <div class="info-card">
+                    <div class="info-card-icon"><i class="fas fa-user-tag"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="اللقب" data-fr="Prénom">اللقب</label>
+                        <span class="info-value" id="view-prenom">—</span>
+                        <input class="info-input" id="edit-prenom" type="text" placeholder="Prénom" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="info-card">
+                    <div class="info-card-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="البريد الإلكتروني" data-fr="Email">البريد الإلكتروني</label>
+                        <span class="info-value" id="view-email">—</span>
+                        <input class="info-input" id="edit-email" type="email" placeholder="email@example.com" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Téléphone -->
+                <div class="info-card">
+                    <div class="info-card-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="رقم الهاتف" data-fr="Téléphone">رقم الهاتف</label>
+                        <span class="info-value" id="view-phone">—</span>
+                        <input class="info-input" id="edit-phone" type="tel" placeholder="+213 xxx xxx xxx" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                <div class="info-card info-card-wide">
+                    <div class="info-card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="العنوان" data-fr="Adresse">العنوان</label>
+                        <span class="info-value" id="view-address">—</span>
+                        <input class="info-input" id="edit-address" type="text" placeholder="Adresse complète" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Rôle -->
+                <div class="info-card">
+                    <div class="info-card-icon"><i class="fas fa-id-badge"></i></div>
+                    <div class="info-card-body">
+                        <label data-ar="الدور / المنصب" data-fr="Rôle">الدور / المنصب</label>
+                        <span class="info-value" id="view-role">—</span>
+                        <select class="info-input" id="edit-role" style="display:none;">
+                            <option value="Responsable" data-ar="مسؤول" data-fr="Responsable">مسؤول</option>
+                            <option value="Contrôleur" data-ar="مراقب" data-fr="Contrôleur">مراقب</option>
+                            <option value="Recenseur" data-ar="إحصائي" data-fr="Recenseur">إحصائي</option>
+                            <option value="Administrateur" data-ar="مدير النظام" data-fr="Administrateur">مدير النظام</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div><!-- /info-grid -->
+
+            <!-- Save / Cancel buttons (edit mode) -->
+            <div class="edit-actions" id="editActions" style="display:none;">
+                <button class="btn-cancel" onclick="cancelEdit()">
+                    <i class="fas fa-times"></i>
+                    <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+                </button>
+                <button class="btn-save" onclick="saveProfile()">
+                    <i class="fas fa-save"></i>
+                    <span data-ar="حفظ التغييرات" data-fr="Enregistrer">حفظ التغييرات</span>
+                </button>
+            </div>
+
+        </div><!-- /section-profile -->
+
+        <!-- ===== SECTION: SECURITY ===== -->
+        <div id="section-security" class="profile-section">
+            <div class="page-header" style="margin-bottom:30px;">
+                <div>
+                    <h2 style="font-size:26px;font-weight:800;color:#0B2D1C;">
+                        <i class="fas fa-lock" style="color:#D4AF37;margin-left:10px;"></i>
+                        <span data-ar="الأمان" data-fr="Sécurité">الأمان</span>
+                    </h2>
+                    <p style="color:#1C4B2D;opacity:0.7;font-size:14px;margin-top:5px;" data-ar="تغيير كلمة المرور" data-fr="Modifier votre mot de passe">تغيير كلمة المرور</p>
+                </div>
+            </div>
+            <div class="security-card">
+                <div class="security-field">
+                    <label data-ar="كلمة المرور الحالية" data-fr="Mot de passe actuel">كلمة المرور الحالية</label>
+                    <div class="password-wrap">
+                        <input type="password" id="currentPass" class="info-input" style="display:block;width:100%;" placeholder="••••••••">
+                        <i class="fas fa-eye toggle-pass" onclick="togglePass('currentPass')"></i>
+                    </div>
+                </div>
+                <div class="security-field">
+                    <label data-ar="كلمة المرور الجديدة" data-fr="Nouveau mot de passe">كلمة المرور الجديدة</label>
+                    <div class="password-wrap">
+                        <input type="password" id="newPass" class="info-input" style="display:block;width:100%;" placeholder="••••••••">
+                        <i class="fas fa-eye toggle-pass" onclick="togglePass('newPass')"></i>
+                    </div>
+                </div>
+                <div class="security-field">
+                    <label data-ar="تأكيد كلمة المرور" data-fr="Confirmer le mot de passe">تأكيد كلمة المرور</label>
+                    <div class="password-wrap">
+                        <input type="password" id="confirmPass" class="info-input" style="display:block;width:100%;" placeholder="••••••••">
+                        <i class="fas fa-eye toggle-pass" onclick="togglePass('confirmPass')"></i>
+                    </div>
+                </div>
+                <button class="btn-save" style="margin-top:20px;" onclick="changePassword()">
+                    <i class="fas fa-shield-alt"></i>
+                    <span data-ar="تحديث كلمة المرور" data-fr="Mettre à jour">تحديث كلمة المرور</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== SECTION: ACTIVITY ===== -->
+        <div id="section-activity" class="profile-section">
+            <div class="page-header" style="margin-bottom:30px;">
+                <div>
+                    <h2 style="font-size:26px;font-weight:800;color:#0B2D1C;">
+                        <i class="fas fa-history" style="color:#D4AF37;margin-left:10px;"></i>
+                        <span data-ar="سجل النشاط" data-fr="Journal d'activité">سجل النشاط</span>
+                    </h2>
+                    <p style="color:#1C4B2D;opacity:0.7;font-size:14px;margin-top:5px;" data-ar="آخر العمليات المنجزة" data-fr="Dernières opérations effectuées">آخر العمليات المنجزة</p>
+                </div>
+            </div>
+            <div id="activityList" class="activity-list"></div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main-container -->
+
+<!-- Toast -->
+<div id="profileToast" class="profile-toast"></div>
+
+<script src="../js/profile.js"></script>
+</body>
+</html>

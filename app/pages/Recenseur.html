@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النظام الوطني للإحصاء الفلاحي 2025 - SNEA 2025</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+
+    <style>
+        /* ===== BILINGUAL TOGGLE ===== */
+        [data-ar][data-fr] { display: inline; }
+        body.lang-fr { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body>
+
+<div id="arabicContent" style="padding-top:100px;">
+
+    <!-- ========== الحاوية الرئيسية / Conteneur principal ========== -->
+    <div class="main-container" style="max-width:1600px;margin:30px auto;padding:0 20px;display:grid;gap:25px;">
+
+        <!-- ========== القائمة الجانبية / Barre latérale ========== -->
+        <div class="sidebar" style="background:rgba(255,255,255,0.7);border-radius:35px;padding:25px 15px;">
+            <h2 style="color:#1C4B2D;margin-bottom:30px;" data-ar="الإحصاء الفلاحي" data-fr="Recensement Agricole">الإحصاء الفلاحي</h2>
+        
+            <div class="menu-item" onclick="showPage('dashboard')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-home" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="لوحة التحكم" data-fr="Tableau de bord">لوحة التحكم</span>
+            </div>
+            <div class="menu-item" onclick="showPage('campaigns')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-chart-line" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="حملات الإحصاء" data-fr="Campagnes de recensement">حملات الإحصاء</span>
+            </div>
+            <div style="height:1px;background:rgba(28,75,45,0.1);margin:20px 15px;"></div>
+            <div class="menu-item" onclick="showPage('exploitants')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-user-tie" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="المستغلون (الفلاحون)" data-fr="Exploitants (Agriculteurs)">المستغلون (الفلاحون)</span>
+                <span class="badge" id="exploitantsCount" style="margin-right:auto;background:#dc3545;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;">0</span>
+            </div>
+            <div class="menu-item" onclick="showPage('exploitations')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-tractor" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="المستغلات (المزارع)" data-fr="Exploitations (Fermes)">المستغلات (المزارع)</span>
+                <span class="badge" id="exploitationsCount" style="margin-right:auto;background:#dc3545;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;">0</span>
+            </div>
+            <div style="height:1px;background:rgba(28,75,45,0.1);margin:20px 15px;"></div>
+            <div class="menu-item" onclick="showPage('security')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-shield-alt" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="المراقبة والأمان" data-fr="Surveillance et sécurité">المراقبة والأمان</span>
+            </div>
+            <div class="menu-item" onclick="showPage('drafts')" style="display:flex;align-items:center;gap:15px;padding:14px 20px;border-radius:20px;cursor:pointer;margin-bottom:5px;">
+                <i class="fas fa-save" style="width:25px;color:#D4AF37;"></i>
+                <span data-ar="المسودات المحفوظة" data-fr="Brouillons sauvegardés">المسودات المحفوظة</span>
+            </div>
+            <div class="menu-divider"></div>
+
+             <button onclick="window.location.href='profile.html'" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid #D4AF37;background:transparent;color:#1C4B2D;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;margin-bottom:10px;" onmouseover="this.style.background='rgba(212,175,55,0.12)'" onmouseout="this.style.background='transparent'">
+                <i class="fas fa-user-circle" style="color:#3b5543;"></i>
+                <span data-ar="ملفي الشخصي" data-fr="Mon Profil">ملفي الشخصي</span>
+            </button>
+            <button id="langToggleBtn" onclick="toggleLang()" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid var(--primary,#4a7c59);background:transparent;color:var(--primary,#4a7c59);cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;">
+                <i class="fas fa-language"></i>
+                <span id="langBtnLabel">Français</span>
+            </button>
+        
+            <button id="deconnexionBtn" onclick="deconnexion()" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid #e53e3e;background:transparent;color:#e53e3e;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;margin-top:12px;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-ar="تسجيل الخروج" data-fr="Déconnexion">تسجيل الخروج</span>
+            </button>
+        </div>
+
+        <!-- ========== المحتوى الرئيسي / Contenu principal ========== -->
+        <div class="content" style="background:rgba(255,255,255,0.7);border-radius:35px;padding:30px;">
+
+            <!-- ========== لوحة التحكم / Tableau de bord ========== -->
+            <div id="dashboard" class="page">
+                <div class="page-header" style="margin-bottom:30px;">
+                    <h2 data-ar="لوحة التحكم" data-fr="Tableau de bord">لوحة التحكم</h2>
+                    <p data-ar="نظرة عامة على النظام والإحصائيات" data-fr="Vue d'ensemble du système et des statistiques">نظرة عامة على النظام والإحصائيات</p>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px;">
+                    <div class="stat-card" style="background:rgba(255,255,255,0.8);border-radius:25px;padding:25px;">
+                        <div><i class="fas fa-users" style="font-size:30px;color:#D4AF37;"></i></div>
+                        <div style="font-size:32px;font-weight:800;" id="farmerCount">0</div>
+                        <div data-ar="إجمالي الفلاحين" data-fr="Total agriculteurs">إجمالي الفلاحين</div>
+                    </div>
+                    <div class="stat-card" style="background:rgba(255,255,255,0.8);border-radius:25px;padding:25px;">
+                        <div><i class="fas fa-tractor" style="font-size:30px;color:#D4AF37;"></i></div>
+                        <div style="font-size:32px;font-weight:800;" id="totalArea">0</div>
+                        <div data-ar="المساحة الإجمالية (هكتار)" data-fr="Superficie totale (hectares)">المساحة الإجمالية (هكتار)</div>
+                    </div>
+                    <div class="stat-card" style="background:rgba(255,255,255,0.8);border-radius:25px;padding:25px;">
+                        <div><i class="fas fa-paw" style="font-size:30px;color:#D4AF37;"></i></div>
+                        <div style="font-size:32px;font-weight:800;" id="totalAnimals">0</div>
+                        <div data-ar="إجمالي المواشي" data-fr="Total cheptel">إجمالي المواشي</div>
+                    </div>
+                    <div class="stat-card" style="background:rgba(255,255,255,0.8);border-radius:25px;padding:25px;">
+                        <div><i class="fas fa-save" style="font-size:30px;color:#D4AF37;"></i></div>
+                        <div style="font-size:32px;font-weight:800;" id="draftCount">0</div>
+                        <div data-ar="المسودات" data-fr="Brouillons">المسودات</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== صفحة المستغلون / Page Exploitants ========== -->
+            <div id="exploitants" class="page">
+                <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+                    <div>
+                        <h2><i class="fas fa-user-tie"></i> <span data-ar="المستغلون (الفلاحون)" data-fr="Exploitants (Agriculteurs)">المستغلون (الفلاحون)</span></h2>
+                        <p data-ar="إدارة بيانات المستغلين الفلاحين" data-fr="Gestion des données des exploitants agricoles">إدارة بيانات المستغلين الفلاحين</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showAddExploitantModal()" style="padding:12px 30px;border-radius:50px;background:linear-gradient(135deg,#1C4B2D,#2E6B3E);color:white;border:none;cursor:pointer;">
+                        <i class="fas fa-plus"></i> <span data-ar="إضافة مستغل جديد" data-fr="Ajouter un exploitant">إضافة مستغل جديد</span>
+                    </button>
+                </div>
+                <div id="exploitantsList"></div>
+            </div>
+
+            <!-- ========== صفحة المستغلات / Page Exploitations ========== -->
+            <div id="exploitations" class="page">
+                <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+                    <div>
+                        <h2><i class="fas fa-tractor"></i> <span data-ar="المستغلات (المزارع)" data-fr="Exploitations (Fermes)">المستغلات (المزارع)</span></h2>
+                        <p data-ar="إدارة بيانات المستغلات الفلاحية" data-fr="Gestion des données des exploitations agricoles">إدارة بيانات المستغلات الفلاحية</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showAddExploitationModal()" style="padding:12px 30px;border-radius:50px;background:linear-gradient(135deg,#1C4B2D,#2E6B3E);color:white;border:none;cursor:pointer;">
+                        <i class="fas fa-plus"></i> <span data-ar="إضافة مستغلة جديدة" data-fr="Ajouter une exploitation">إضافة مستغلة جديدة</span>
+                    </button>
+                </div>
+                <div id="exploitationsList"></div>
+            </div>
+
+            <!-- ========== صفحة الحملات / Page Campagnes ========== -->
+            <div id="campaigns" class="page">
+                <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
+                    <div>
+                        <h2><i class="fas fa-chart-line"></i> <span data-ar="حملات الإحصاء" data-fr="Campagnes de recensement">حملات الإحصاء</span></h2>
+                        <p data-ar="إدارة وإنشاء حملات الإحصاء الفلاحي" data-fr="Gestion et création des campagnes de recensement agricole">إدارة وإنشاء حملات الإحصاء الفلاحي</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showCreateCampaignForm()" style="padding:12px 30px;border-radius:50px;background:linear-gradient(135deg,#1C4B2D,#2E6B3E);color:white;border:none;cursor:pointer;">
+                        <i class="fas fa-plus"></i> <span data-ar="حملة جديدة" data-fr="Nouvelle campagne">حملة جديدة</span>
+                    </button>
+                </div>
+                <div id="campaignsList"></div>
+            </div>
+
+            <!-- ========== صفحة تفاصيل الحملة / Détails campagne ========== -->
+            <div id="campaignDetails" class="page">
+                <div class="page-header">
+                    <button class="btn-back" onclick="backToCampaigns()" style="background:transparent;border:none;color:#1C4B2D;font-size:16px;cursor:pointer;margin-bottom:15px;">
+                        <i class="fas fa-arrow-right"></i> <span data-ar="العودة للحملات" data-fr="Retour aux campagnes">العودة للحملات</span>
+                    </button>
+                    <h2 id="campaignDetailsTitle"></h2>
+                    <p id="campaignDetailsDesc"></p>
+                    <div style="display:flex;gap:15px;margin-top:20px;">
+                        <button class="btn btn-success" onclick="showNewSurveyFileModal()" style="padding:12px 30px;border-radius:50px;background:linear-gradient(135deg,#28a745,#218838);color:white;border:none;cursor:pointer;">
+                            <i class="fas fa-plus-circle"></i> <span data-ar="إنشاء ملف إحصاء جديد" data-fr="Créer un nouveau fichier de recensement">إنشاء ملف إحصاء جديد</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="campaignFilesList"></div>
+            </div>
+
+            <!-- ========== صفحة المراقبة / Surveillance ========== -->
+            <div id="security" class="page">
+                <div class="page-header" style="margin-bottom:30px;">
+                    <h2><i class="fas fa-shield-alt"></i> <span data-ar="سجل المراقبة والأمان" data-fr="Journal de surveillance et sécurité">سجل المراقبة والأمان</span></h2>
+                </div>
+                <div id="securityLogsList"></div>
+            </div>
+
+            <!-- ========== صفحة المسودات / Brouillons ========== -->
+            <div id="drafts" class="page">
+                <div class="page-header" style="margin-bottom:30px;">
+                    <h2><i class="fas fa-save"></i> <span data-ar="المسودات المحفوظة" data-fr="Brouillons sauvegardés">المسودات المحفوظة</span></h2>
+                </div>
+                <div id="draftsList"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ========== نافذة إضافة مستغل جديد / Modale ajout exploitant (Champs 1-31) ========== -->
+<div id="addExploitantModal" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center;">
+    <div class="modal-content" style="background:white;width:90%;max-width:900px;max-height:90vh;overflow-y:auto;border-radius:30px;padding:30px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:2px solid #D4AF37;padding-bottom:15px;">
+            <h3 style="color:#1C4B2D;"><i class="fas fa-user-tie"></i>
+                <span data-ar="إضافة مستغل جديد (فلاح) - الحقول 1-31" data-fr="Ajouter un exploitant (Agriculteur) - Champs 1-31">إضافة مستغل جديد (فلاح) - الحقول 1-31</span>
+            </h3>
+            <button onclick="closeAddExploitantModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- I - معلومات عامة / Informations générales -->
+            <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="I - المعلومات العامة (الحقول 1-12)" data-fr="I - Informations générales (Champs 1-12)">I - المعلومات العامة (الحقول 1-12)</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-calendar-day"></i> <span data-ar="1 - تاريخ المرور" data-fr="1 - Date de passage">1 - تاريخ المرور</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" id="newExploitantPassDay" data-placeholder-ar="يوم" data-placeholder-fr="Jour" placeholder="يوم" style="width:80px;">
+                        <input type="text" class="input-box" id="newExploitantPassMonth" data-placeholder-ar="شهر" data-placeholder-fr="Mois" placeholder="شهر" style="width:80px;">
+                        <input type="text" class="input-box" id="newExploitantPassYear" data-placeholder-ar="سنة" data-placeholder-fr="Année" placeholder="سنة" style="width:100px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user-tag"></i> <span data-ar="2 - لقب المحصي" data-fr="2 - Nom du recenseur">2 - لقب المحصي</span></label>
+                    <input type="text" class="input-box" id="newExploitantRecenseurNom" data-placeholder-ar="لقب المحصي" data-placeholder-fr="Nom du recenseur" placeholder="لقب المحصي">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user"></i> <span data-ar="3 - اسم المحصي" data-fr="3 - Prénom du recenseur">3 - اسم المحصي</span></label>
+                    <input type="text" class="input-box" id="newExploitantRecenseurPrenom" data-placeholder-ar="اسم المحصي" data-placeholder-fr="Prénom du recenseur" placeholder="اسم المحصي">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-calendar-check"></i> <span data-ar="4 - تاريخ المراقبة" data-fr="4 - Date de contrôle">4 - تاريخ المراقبة</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" id="newExploitantControlDay" data-placeholder-ar="يوم" data-placeholder-fr="Jour" placeholder="يوم" style="width:80px;">
+                        <input type="text" class="input-box" id="newExploitantControlMonth" data-placeholder-ar="شهر" data-placeholder-fr="Mois" placeholder="شهر" style="width:80px;">
+                        <input type="text" class="input-box" id="newExploitantControlYear" data-placeholder-ar="سنة" data-placeholder-fr="Année" placeholder="سنة" style="width:100px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user-check"></i> <span data-ar="5 - لقب المراقب" data-fr="5 - Nom du contrôleur">5 - لقب المراقب</span></label>
+                    <input type="text" class="input-box" id="newExploitantControleurNom" data-placeholder-ar="لقب المراقب" data-placeholder-fr="Nom du contrôleur" placeholder="لقب المراقب">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user-check"></i> <span data-ar="6 - اسم المراقب" data-fr="6 - Prénom du contrôleur">6 - اسم المراقب</span></label>
+                    <input type="text" class="input-box" id="newExploitantControleurPrenom" data-placeholder-ar="اسم المراقب" data-placeholder-fr="Prénom du contrôleur" placeholder="اسم المراقب">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-map-marker-alt"></i> <span data-ar="7 - الولاية" data-fr="7 - Wilaya">7 - الولاية</span></label>
+                    <select class="input-box" id="newExploitantWilaya2">
+                        <option value="1">01 - أدرار / Adrar</option>
+                        <option value="2">02 - الشلف / Chlef</option>
+                        <option value="3">03 - الأغواط / Laghouat</option>
+                        <option value="4">04 - أم البواقي / Oum El Bouaghi</option>
+                        <option value="5">05 - باتنة / Batna</option>
+                        <option value="6">06 - بجاية / Béjaïa</option>
+                        <option value="7">07 - بسكرة / Biskra</option>
+                        <option value="8">08 - بشار / Béchar</option>
+                        <option value="9">09 - البليدة / Blida</option>
+                        <option value="10">10 - البويرة / Bouira</option>
+                        <option value="11">11 - تمنراست / Tamanrasset</option>
+                        <option value="12">12 - تبسة / Tébessa</option>
+                        <option value="13">13 - تلمسان / Tlemcen</option>
+                        <option value="14">14 - تيارت / Tiaret</option>
+                        <option value="15">15 - تيزي وزو / Tizi Ouzou</option>
+                        <option value="16">16 - الجزائر / Alger</option>
+                        <option value="17">17 - الجلفة / Djelfa</option>
+                        <option value="18">18 - جيجل / Jijel</option>
+                        <option value="19">19 - سطيف / Sétif</option>
+                        <option value="20">20 - سعيدة / Saïda</option>
+                        <option value="21">21 - سكيكدة / Skikda</option>
+                        <option value="22">22 - سيدي بلعباس / Sidi Bel Abbès</option>
+                        <option value="23">23 - عنابة / Annaba</option>
+                        <option value="24">24 - قالمة / Guelma</option>
+                        <option value="25">25 - قسنطينة / Constantine</option>
+                        <option value="26">26 - المدية / Médéa</option>
+                        <option value="27">27 - مستغانم / Mostaganem</option>
+                        <option value="28">28 - المسيلة / Msila</option>
+                        <option value="29">29 - معسكر / Mascara</option>
+                        <option value="30">30 - ورقلة / Ouargla</option>
+                        <option value="31">31 - وهران / Oran</option>
+                        <option value="32">32 - البيض / El Bayadh</option>
+                        <option value="33">33 - إليزي / Illizi</option>
+                        <option value="34">34 - برج بوعريريج / Bordj Bou Arréridj</option>
+                        <option value="35">35 - بومرداس / Boumerdès</option>
+                        <option value="36">36 - الطارف / El Tarf</option>
+                        <option value="37">37 - تندوف / Tindouf</option>
+                        <option value="38">38 - تسمسيلت / Tissemsilt</option>
+                        <option value="39">39 - الوادي / El Oued</option>
+                        <option value="40">40 - خنشلة / Khenchela</option>
+                        <option value="41">41 - سوق أهراس / Souk Ahras</option>
+                        <option value="42">42 - تيبازة / Tipaza</option>
+                        <option value="43">43 - ميلة / Mila</option>
+                        <option value="44">44 - عين الدفلى / Aïn Defla</option>
+                        <option value="45">45 - النعامة / Naâma</option>
+                        <option value="46">46 - عين تموشنت / Aïn Témouchent</option>
+                        <option value="47">47 - غرداية / Ghardaïa</option>
+                        <option value="48">48 - غليزان / Relizane</option>
+                        <option value="49">49 - تيميمون / Timimoun</option>
+                        <option value="50">50 - برج باجي مختار / Bordj Badji Mokhtar</option>
+                        <option value="51">51 - أولاد جلال / Ouled Djellal</option>
+                        <option value="52">52 - بني عباس / Béni Abbès</option>
+                        <option value="53">53 - عين صالح / In Salah</option>
+                        <option value="54">54 - عين قزام / In Guezzam</option>
+                        <option value="55">55 - تقرت / Touggourt</option>
+                        <option value="56">56 - جانت / Djanet</option>
+                        <option value="57">57 - المغير / El M'Ghair</option>
+                        <option value="58">58 - المنيعة / El Meniaa</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-city"></i> <span data-ar="8 - البلدية" data-fr="8 - Commune">8 - البلدية</span></label>
+                    <input type="text" class="input-box" id="newExploitantCommune" data-placeholder-ar="البلدية" data-placeholder-fr="Commune" placeholder="البلدية">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-barcode"></i> <span data-ar="9 - رمز البلدية/الولاية" data-fr="9 - Code commune/wilaya">9 - رمز البلدية/الولاية</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantCode1" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantCode2" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantCode3" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantCode4" style="width:60px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-map-pin"></i> <span data-ar="10 - اسم المكان/المنطقة" data-fr="10 - Lieu-dit / Zone">10 - اسم المكان/المنطقة</span></label>
+                    <input type="text" class="input-box" id="newExploitantLieuDit" data-placeholder-ar="اسم المكان" data-placeholder-fr="Lieu-dit" placeholder="اسم المكان">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-hashtag"></i> <span data-ar="11 - رقم المنطقة" data-fr="11 - Numéro de district">11 - رقم المنطقة</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantDistrict1" style="width:80px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantDistrict2" style="width:80px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-file-alt"></i> <span data-ar="12 - رقم المستثمرة" data-fr="12 - N° de l'exploitation">12 - رقم المستثمرة</span></label>
+                    <input type="text" class="input-box" id="newExploitantNumExploitation" data-placeholder-ar="رقم المستثمرة" data-placeholder-fr="Numéro exploitation" placeholder="رقم المستثمرة">
+                </div>
+            </div>
+
+            <!-- II - تعريف المستثمر / Identification exploitant -->
+            <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="II - تعريف المستثمر (الفلاح) - الحقول 13-31" data-fr="II - Identification de l'exploitant (Agriculteur) - Champs 13-31">II - تعريف المستثمر (الفلاح) - الحقول 13-31</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user-tag"></i> <span data-ar="13 - اللقب" data-fr="13 - Nom">13 - اللقب</span></label>
+                    <input type="text" class="input-box" id="newExploitantNom" data-placeholder-ar="اللقب" data-placeholder-fr="Nom" placeholder="اللقب">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user"></i> <span data-ar="14 - الاسم" data-fr="14 - Prénom">14 - الاسم</span></label>
+                    <input type="text" class="input-box" id="newExploitantPrenom" data-placeholder-ar="الاسم" data-placeholder-fr="Prénom" placeholder="الاسم">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-birthday-cake"></i> <span data-ar="15 - سنة الميلاد" data-fr="15 - Année de naissance">15 - سنة الميلاد</span></label>
+                    <input type="number" class="input-box" id="newExploitantBirthYear" placeholder="1990">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-venus-mars"></i> <span data-ar="16 - الجنس" data-fr="16 - Sexe">16 - الجنس</span></label>
+                    <div style="display:flex;gap:20px;">
+                        <label><input type="radio" name="newExploitantSexe" value="male"> <span data-ar="ذكر" data-fr="Masculin">ذكر</span></label>
+                        <label><input type="radio" name="newExploitantSexe" value="female"> <span data-ar="أنثى" data-fr="Féminin">أنثى</span></label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-graduation-cap"></i> <span data-ar="17 - المستوى التعليمي" data-fr="17 - Niveau d'instruction">17 - المستوى التعليمي</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                        <label><input type="radio" name="newExploitantEducation" value="لا شيء"> <span data-ar="لا شيء" data-fr="Aucun">لا شيء</span></label>
+                        <label><input type="radio" name="newExploitantEducation" value="ابتدائي"> <span data-ar="ابتدائي" data-fr="Primaire">ابتدائي</span></label>
+                        <label><input type="radio" name="newExploitantEducation" value="متوسط"> <span data-ar="متوسط" data-fr="Moyen">متوسط</span></label>
+                        <label><input type="radio" name="newExploitantEducation" value="ثانوي"> <span data-ar="ثانوي" data-fr="Secondaire">ثانوي</span></label>
+                        <label><input type="radio" name="newExploitantEducation" value="جامعي"> <span data-ar="جامعي" data-fr="Universitaire">جامعي</span></label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="18 - مستوى التكوين الفلاحي" data-fr="18 - Niveau de formation agricole">18 - مستوى التكوين الفلاحي</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                        <label><input type="radio" name="newExploitantFormation" value="لا شيء"> <span data-ar="لا شيء" data-fr="Aucun">لا شيء</span></label>
+                        <label><input type="radio" name="newExploitantFormation" value="تأهيل"> <span data-ar="تأهيل" data-fr="Qualification">تأهيل</span></label>
+                        <label><input type="radio" name="newExploitantFormation" value="عون تقني"> <span data-ar="عون تقني" data-fr="Agent technique">عون تقني</span></label>
+                        <label><input type="radio" name="newExploitantFormation" value="تقني"> <span data-ar="تقني" data-fr="Technicien">تقني</span></label>
+                        <label><input type="radio" name="newExploitantFormation" value="مهندس"> <span data-ar="مهندس" data-fr="Ingénieur">مهندس</span></label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-map-marker-alt"></i> <span data-ar="19 - عنوان المستغل" data-fr="19 - Adresse de l'exploitant">19 - عنوان المستغل</span></label>
+                    <input type="text" class="input-box" id="newExploitantAdresse" data-placeholder-ar="العنوان الكامل" data-placeholder-fr="Adresse complète" placeholder="العنوان الكامل">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-phone"></i> <span data-ar="20 - رقم الهاتف" data-fr="20 - Numéro de téléphone">20 - رقم الهاتف</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="05" id="newExploitantPhone1" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantPhone2" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantPhone3" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantPhone4" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="2" placeholder="00" id="newExploitantPhone5" style="width:60px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-envelope"></i> <span data-ar="21 - البريد الإلكتروني" data-fr="21 - Email">21 - البريد الإلكتروني</span></label>
+                    <input type="email" class="input-box" id="newExploitantEmail" placeholder="example@mail.com">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-id-card"></i> <span data-ar="22 - رقم التعريف الوطني NIN" data-fr="22 - N° Identification Nationale NIN">22 - رقم التعريف الوطني NIN</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin1" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin2" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin3" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin4" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin5" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNin6" style="width:60px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-chart-line"></i> <span data-ar="23 - رقم التعريف الإحصائي NIS" data-fr="23 - N° Identification Statistique NIS">23 - رقم التعريف الإحصائي NIS</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNis1" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNis2" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNis3" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNis4" style="width:60px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantNis5" style="width:60px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-id-badge"></i> <span data-ar="24 - رقم بطاقة الفلاح" data-fr="24 - N° Carte agriculteur">24 - رقم بطاقة الفلاح</span></label>
+                    <div style="display:flex;gap:10px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantCarte1" style="width:80px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantCarte2" style="width:80px;">
+                        <input type="text" class="input-box" maxlength="3" id="newExploitantCarte3" style="width:80px;">
+                        <input type="text" class="input-box" maxlength="2" id="newExploitantCarte4" style="width:60px;">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-clipboard-list"></i> <span data-ar="25 - التسجيل في المنظمات" data-fr="25 - Inscription dans les organisations">25 - التسجيل في المنظمات</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                        <label><input type="checkbox" id="newExploitantInscritCAW"> CAW</label>
+                        <label><input type="checkbox" id="newExploitantInscritCAPA"> CAPA</label>
+                        <label><input type="checkbox" id="newExploitantInscritUNPA"> UNPA</label>
+                        <label><input type="checkbox" id="newExploitantInscritCARM"> CARM</label>
+                        <label><input type="checkbox" id="newExploitantInscritCCW"> CCW</label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-shield-alt"></i> <span data-ar="26 - نوع التأمين" data-fr="26 - Type d'assurance">26 - نوع التأمين</span></label>
+                    <div style="display:flex;gap:20px;">
+                        <label><input type="radio" name="newExploitantAssuranceType" value="CASNOS"> CASNOS</label>
+                        <label><input type="radio" name="newExploitantAssuranceType" value="CNAS"> CNAS</label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-family"></i> <span data-ar="28 - منحدر من عائلة فلاحية" data-fr="28 - Issu d'une famille agricole">28 - منحدر من عائلة فلاحية</span></label>
+                    <div style="display:flex;gap:20px;">
+                        <label><input type="radio" name="newExploitantFamille" value="نعم"> <span data-ar="نعم" data-fr="Oui">نعم</span></label>
+                        <label><input type="radio" name="newExploitantFamille" value="لا"> <span data-ar="لا" data-fr="Non">لا</span></label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-user-check"></i> <span data-ar="29 - الفلاح الرئيسي" data-fr="29 - Exploitant principal">29 - الفلاح الرئيسي</span></label>
+                    <div style="display:flex;gap:20px;">
+                        <label><input type="radio" name="newExploitantRole" value="رئيسي"> <span data-ar="رئيسي" data-fr="Principal">رئيسي</span></label>
+                        <label><input type="radio" name="newExploitantRole" value="وحيد"> <span data-ar="وحيد" data-fr="Unique">وحيد</span></label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-users"></i> <span data-ar="30 - عدد المتداولين" data-fr="30 - Nombre de co-exploitants">30 - عدد المتداولين</span></label>
+                    <input type="number" class="input-box" id="newExploitantCoExploitants" value="0">
+                </div>
+                <div class="field-group">
+                    <label class="field-label"><i class="fas fa-briefcase"></i> <span data-ar="31 - طبيعة الفلاح" data-fr="31 - Nature de l'exploitant">31 - طبيعة الفلاح</span></label>
+                    <div style="display:flex;gap:20px;">
+                        <label><input type="radio" name="newExploitantNature" value="مالك"> <span data-ar="مالك" data-fr="Propriétaire">مالك</span></label>
+                        <label><input type="radio" name="newExploitantNature" value="مسير"> <span data-ar="مسير" data-fr="Gérant">مسير</span></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:30px;display:flex;gap:15px;justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeAddExploitantModal()">
+                <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+            </button>
+            <button class="btn btn-success" onclick="saveNewExploitant()">
+                <span data-ar="حفظ المستغل" data-fr="Enregistrer l'exploitant">حفظ المستغل</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== نافذة إضافة مستغلة جديدة / Modale ajout exploitation (Champs 32-74) ========== -->
+<div id="addExploitationModal" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center;">
+    <div class="modal-content" style="background:white;width:90%;max-width:900px;max-height:90vh;overflow-y:auto;border-radius:30px;padding:30px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:2px solid #D4AF37;padding-bottom:15px;">
+            <h3 style="color:#1C4B2D;"><i class="fas fa-tractor"></i>
+                <span data-ar="إضافة مستغلة جديدة (مزرعة) - الحقول 32-74" data-fr="Ajouter une exploitation (Ferme) - Champs 32-74">إضافة مستغلة جديدة (مزرعة) - الحقول 32-74</span>
+            </h3>
+            <button onclick="closeAddExploitationModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group" style="margin-bottom:25px;">
+                <label class="field-label"><i class="fas fa-user-tie"></i>
+                    <span data-ar="الفلاح المالك للمستغلة" data-fr="Agriculteur propriétaire de l'exploitation">الفلاح المالك للمستغلة</span>
+                    <span style="color:red;">*</span>
+                </label>
+                <select class="input-box" id="newExploitationExploitantId" onchange="checkExploitantSelected()">
+                    <option value="" data-ar="-- اختر فلاحاً --" data-fr="-- Choisir un agriculteur --">-- اختر فلاحاً --</option>
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="closeAddExploitationModal(); showAddExploitantModal();" style="margin-top:10px;width:100%;">
+                    + <span data-ar="إنشاء فلاح جديد" data-fr="Créer un nouvel agriculteur">إنشاء فلاح جديد</span>
+                </button>
+            </div>
+            
+            <div id="exploitationFormFields" style="display:none;">
+                <!-- III / IV / V ... -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="III - تعريف المستثمرة - الحقول 32-43" data-fr="III - Identification de l'exploitation - Champs 32-43">III - تعريف المستثمرة - الحقول 32-43</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-tag"></i> <span data-ar="32 - اسم المستثمرة" data-fr="32 - Nom de l'exploitation">32 - اسم المستثمرة</span></label>
+                        <input type="text" class="input-box" id="newExploitationNom" data-placeholder-ar="اسم المستثمرة" data-placeholder-fr="Nom de l'exploitation" placeholder="اسم المستثمرة">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-map-marker-alt"></i> <span data-ar="33 - عنوان المستثمرة" data-fr="33 - Adresse de l'exploitation">33 - عنوان المستثمرة</span></label>
+                        <input type="text" class="input-box" id="newExploitationAdresse" data-placeholder-ar="العنوان" data-placeholder-fr="Adresse" placeholder="العنوان">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-gavel"></i> <span data-ar="34 - الوضع القانوني" data-fr="34 - Statut juridique">34 - الوضع القانوني</span></label>
+                        <select class="input-box" id="newExploitationStatut">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="مؤسسة مدنية" data-ar="مؤسسة مدنية" data-fr="Société civile">مؤسسة مدنية</option>
+                            <option value="مؤسسة عائلية" data-ar="مؤسسة عائلية" data-fr="Exploitation familiale">مؤسسة عائلية</option>
+                            <option value="SARL">SARL</option>
+                            <option value="EURL">EURL</option>
+                            <option value="تعاونية" data-ar="تعاونية" data-fr="Coopérative">تعاونية</option>
+                            <option value="إيجار" data-ar="إيجار" data-fr="Location">إيجار</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-map-marked-alt"></i> <span data-ar="35 - الإحداثيات" data-fr="35 - Coordonnées GPS">35 - الإحداثيات</span></label>
+                        <div style="display:flex;gap:10px;">
+                            <input type="text" class="input-box" id="newExploitationLongitude" data-placeholder-ar="خط الطول X" data-placeholder-fr="Longitude X" placeholder="خط الطول X">
+                            <input type="text" class="input-box" id="newExploitationLatitude" data-placeholder-ar="خط العرض Y" data-placeholder-fr="Latitude Y" placeholder="خط العرض Y">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-seedling"></i> <span data-ar="36 - نشاط المستثمرة" data-fr="36 - Vocation de l'exploitation">36 - نشاط المستثمرة</span></label>
+                        <select class="input-box" id="newExploitationVocation">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="نباتي" data-ar="نباتي" data-fr="Végétal">نباتي</option>
+                            <option value="حيواني" data-ar="حيواني" data-fr="Animal">حيواني</option>
+                            <option value="مختلط" data-ar="مختلط" data-fr="Mixte">مختلط</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-horse"></i> <span data-ar="37 - إذا حيواني: هل لديه أراضٍ؟" data-fr="37 - Si animal : a-t-il des terres ?">37 - إذا حيواني: هل لديه أراضٍ؟</span></label>
+                        <select class="input-box" id="newExploitationTerreAnimal">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="مع أرض" data-ar="مع أرض" data-fr="Avec terre">مع أرض</option>
+                            <option value="بدون أرض" data-ar="بدون أرض" data-fr="Sans terre">بدون أرض</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-road"></i> <span data-ar="38 - إمكانية الوصول" data-fr="38 - Accessibilité">38 - إمكانية الوصول</span></label>
+                        <select class="input-box" id="newExploitationAccess">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="طريق وطني" data-ar="طريق وطني" data-fr="Route nationale">طريق وطني</option>
+                            <option value="طريق ولائي" data-ar="طريق ولائي" data-fr="Route de wilaya">طريق ولائي</option>
+                            <option value="طريق بلدي" data-ar="طريق بلدي" data-fr="Chemin communal">طريق بلدي</option>
+                            <option value="مسار ريفي" data-ar="مسار ريفي" data-fr="Piste rurale">مسار ريفي</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-bolt"></i> <span data-ar="39 - متصلة بالكهرباء؟" data-fr="39 - Raccordée à l'électricité ?">39 - متصلة بالكهرباء؟</span></label>
+                        <select class="input-box" id="newExploitationElectricite">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option>
+                            <option value="لا" data-ar="لا" data-fr="Non">لا</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-phone-alt"></i> <span data-ar="40 - متصلة بالهاتف؟" data-fr="40 - Raccordée au téléphone ?">40 - متصلة بالهاتف؟</span></label>
+                        <select class="input-box" id="newExploitationTelephone">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option>
+                            <option value="لا" data-ar="لا" data-fr="Non">لا</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-mobile-alt"></i> <span data-ar="41 - نوع الهاتف" data-fr="41 - Type de téléphone">41 - نوع الهاتف</span></label>
+                        <select class="input-box" id="newExploitationTypeTel">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="هاتف نقال" data-ar="هاتف نقال" data-fr="Mobile">هاتف نقال</option>
+                            <option value="هاتف ثابت" data-ar="هاتف ثابت" data-fr="Fixe">هاتف ثابت</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-wifi"></i> <span data-ar="42 - متصلة بالإنترنت؟" data-fr="42 - Connectée à Internet ?">42 - متصلة بالإنترنت؟</span></label>
+                        <select class="input-box" id="newExploitationInternet">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option>
+                            <option value="لا" data-ar="لا" data-fr="Non">لا</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label"><i class="fas fa-laptop"></i> <span data-ar="43 - استخدام الإنترنت للفلاحة؟" data-fr="43 - Internet utilisé pour l'agriculture ?">43 - استخدام الإنترنت للفلاحة؟</span></label>
+                        <select class="input-box" id="newExploitationInternetAgricole">
+                            <option value="" data-ar="اختر" data-fr="Choisir">اختر</option>
+                            <option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option>
+                            <option value="لا" data-ar="لا" data-fr="Non">لا</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- IV - مساحة المستثمرة / Superficies -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="IV - مساحة المستثمرة - الحقول 47-63 (هكتار)" data-fr="IV - Superficies de l'exploitation - Champs 47-63 (hectares)">IV - مساحة المستثمرة - الحقول 47-63 (هكتار)</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-globe"></i> <span data-ar="47 - محاصيل عشبية" data-fr="47 - Cultures herbacées">47 - محاصيل عشبية</span></label><div style="display:flex;gap:10px;"><input type="number" step="0.1" class="input-box" id="newExploitationHerbaceeIrriguee" data-placeholder-ar="مروية" data-placeholder-fr="Irriguée" placeholder="مروية"><input type="number" step="0.1" class="input-box" id="newExploitationHerbaceeSec" data-placeholder-ar="جافة" data-placeholder-fr="Sèche" placeholder="جافة"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-bed"></i> <span data-ar="48 - أراضي مستريحة (البور)" data-fr="48 - Jachères">48 - أراضي مستريحة (البور)</span></label><div style="display:flex;gap:10px;"><input type="number" step="0.1" class="input-box" id="newExploitationJacherIrriguee" data-placeholder-ar="مروية" data-placeholder-fr="Irriguée" placeholder="مروية"><input type="number" step="0.1" class="input-box" id="newExploitationJacherSec" data-placeholder-ar="جافة" data-placeholder-fr="Sèche" placeholder="جافة"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-tree"></i> <span data-ar="49 - محاصيل دائمة" data-fr="49 - Cultures pérennes">49 - محاصيل دائمة</span></label><div style="display:flex;gap:10px;"><input type="number" step="0.1" class="input-box" id="newExploitationPerenesIrriguee" data-placeholder-ar="مروية" data-placeholder-fr="Irriguée" placeholder="مروية"><input type="number" step="0.1" class="input-box" id="newExploitationPerenesSec" data-placeholder-ar="جافة" data-placeholder-fr="Sèche" placeholder="جافة"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="50 - مروج طبيعية" data-fr="50 - Prairies naturelles">50 - مروج طبيعية</span></label><div style="display:flex;gap:10px;"><input type="number" step="0.1" class="input-box" id="newExploitationPrairieIrriguee" data-placeholder-ar="مروية" data-placeholder-fr="Irriguée" placeholder="مروية"><input type="number" step="0.1" class="input-box" id="newExploitationPrairieSec" data-placeholder-ar="جافة" data-placeholder-fr="Sèche" placeholder="جافة"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-chart-pie"></i> <span data-ar="51 - SAU" data-fr="51 - SAU">51 - SAU</span></label><div style="display:flex;gap:10px;"><input type="number" step="0.1" class="input-box" id="newExploitationSauIrriguee" data-placeholder-ar="مروية" data-placeholder-fr="Irriguée" placeholder="مروية"><input type="number" step="0.1" class="input-box" id="newExploitationSauSec" data-placeholder-ar="جافة" data-placeholder-fr="Sèche" placeholder="جافة"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-horse"></i> <span data-ar="52 - المراعي والمسارح" data-fr="52 - Pacages et parcours">52 - المراعي والمسارح</span></label><input type="number" step="0.1" class="input-box" id="newExploitationPacages" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-times-circle"></i> <span data-ar="53 - مساحات غير منتجة" data-fr="53 - Superficies non productives">53 - مساحات غير منتجة</span></label><input type="number" step="0.1" class="input-box" id="newExploitationSuperficieNonProductive" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-expand"></i> <span data-ar="54 - SAT" data-fr="54 - SAT">54 - SAT</span></label><input type="number" step="0.1" class="input-box" id="newExploitationSuperficie" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-trees"></i> <span data-ar="55 - أراضي الغابات" data-fr="55 - Terres forestières">55 - أراضي الغابات</span></label><input type="number" step="0.1" class="input-box" id="newExploitationForets" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-globe-africa"></i> <span data-ar="56 - المساحة الإجمالية ST" data-fr="56 - Superficie totale ST">56 - المساحة الإجمالية ST</span></label><input type="number" step="0.1" class="input-box" id="newExploitationSuperficieTotale" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-question-circle"></i> <span data-ar="57 - قطعة واحدة؟" data-fr="57 - En un seul bloc ?">57 - قطعة واحدة؟</span></label><select class="input-box" id="newExploitationUnBloc"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-th"></i> <span data-ar="58 - عدد القطع" data-fr="58 - Nombre de parcelles">58 - عدد القطع</span></label><input type="number" class="input-box" id="newExploitationNombreBlocs" data-placeholder-ar="عدد القطع" data-placeholder-fr="Nombre parcelles" placeholder="عدد القطع"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-home"></i> <span data-ar="59 - سكان غير شرعيين؟" data-fr="59 - Occupants irréguliers ?">59 - سكان غير شرعيين؟</span></label><select class="input-box" id="newExploitationIndusOccupants"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-building"></i> <span data-ar="61 - المساحة المبنية (م²)" data-fr="61 - Superficie bâtie (m²)">61 - المساحة المبنية (م²)</span></label><input type="number" class="input-box" id="newExploitationSurfaceBatie" data-placeholder-ar="م²" data-placeholder-fr="m²" placeholder="م²"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-bolt"></i> <span data-ar="63 - مصادر الطاقة" data-fr="63 - Sources d'énergie">63 - مصادر الطاقة</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="newExploitationEnergieReseau"> <span data-ar="كهرباء" data-fr="Électricité">كهرباء</span></label><label><input type="checkbox" id="newExploitationEnergieGroupe"> <span data-ar="مولد" data-fr="Groupe électrogène">مولد</span></label><label><input type="checkbox" id="newExploitationEnergieSolaire"> <span data-ar="شمسية" data-fr="Solaire">شمسية</span></label><label><input type="checkbox" id="newExploitationEnergieEolienne"> <span data-ar="رياح" data-fr="Éolienne">رياح</span></label></div></div>
+                </div>
+
+                <!-- V - الأشجار المتفرقة / Arbres épars -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="V - الأشجار المتفرقة - الحقول 65-74 (عدد الأشجار)" data-fr="V - Arbres épars - Champs 65-74 (nombre d'arbres)">V - الأشجار المتفرقة - الحقول 65-74 (عدد الأشجار)</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-olive"></i> <span data-ar="65 - الزيتون" data-fr="65 - Oliviers">65 - الزيتون</span></label><input type="number" class="input-box" id="newExploitationArbresOliviers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="66 - التين" data-fr="66 - Figuiers">66 - التين</span></label><input type="number" class="input-box" id="newExploitationArbresFiguiers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-seedling"></i> <span data-ar="67 - ذوات النوى" data-fr="67 - Arbres à noyaux">67 - ذوات النوى</span></label><input type="number" class="input-box" id="newExploitationArbresNoyaux" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-tree"></i> <span data-ar="68 - العنب" data-fr="68 - Vignes">68 - العنب</span></label><input type="number" class="input-box" id="newExploitationArbresVigne" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-circle"></i> <span data-ar="69 - الرمان" data-fr="69 - Grenadiers">69 - الرمان</span></label><input type="number" class="input-box" id="newExploitationArbresGrenadiers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-circle"></i> <span data-ar="70 - اللوز" data-fr="70 - Amandiers">70 - اللوز</span></label><input type="number" class="input-box" id="newExploitationArbresAmandiers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-spa"></i> <span data-ar="71 - السفرجل" data-fr="71 - Cognassiers">71 - السفرجل</span></label><input type="number" class="input-box" id="newExploitationArbresCognassiers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-spa"></i> <span data-ar="72 - نخيل التمر" data-fr="72 - Palmiers dattiers">72 - نخيل التمر</span></label><input type="number" class="input-box" id="newExploitationArbresPalmiers" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-tree"></i> <span data-ar="73 - الخروب" data-fr="73 - Caroubiers">73 - الخروب</span></label><input type="number" class="input-box" id="newExploitationArbresCaroubier" placeholder="0"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-plus"></i> <span data-ar="74 - أشجار أخرى" data-fr="74 - Autres arbres">74 - أشجار أخرى</span></label><input type="number" class="input-box" id="newExploitationArbresAutres" placeholder="0"></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:30px;display:flex;gap:15px;justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeAddExploitationModal()">
+                <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+            </button>
+            <button class="btn btn-success" id="saveExploitationBtn" onclick="saveNewExploitation()" disabled>
+                <span data-ar="حفظ المستغلة" data-fr="Enregistrer l'exploitation">حفظ المستغلة</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== نافذة إنشاء ملف إحصاء / Modale fichier recensement (Champs 75-171) ========== -->
+<div id="newSurveyFileModal" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center;">
+    <div class="modal-content" style="background:white;width:95%;max-width:1200px;max-height:90vh;overflow-y:auto;border-radius:30px;padding:30px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:2px solid #D4AF37;padding-bottom:15px;">
+            <h3 style="color:#1C4B2D;"><i class="fas fa-file-alt"></i>
+                <span data-ar="إنشاء ملف إحصاء جديد - الحقول 75-171" data-fr="Créer un fichier de recensement - Champs 75-171">إنشاء ملف إحصاء جديد - الحقول 75-171</span>
+            </h3>
+            <button onclick="closeNewSurveyFileModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group" style="margin-bottom:25px;">
+                <label class="field-label"><i class="fas fa-user-tie"></i>
+                    <span data-ar="اختر الفلاح" data-fr="Choisir l'agriculteur">اختر الفلاح</span>
+                    <span style="color:red;">*</span>
+                </label>
+                <select class="input-box" id="surveyExploitantSelect" onchange="loadExploitationsForSurvey()">
+                    <option value="" data-ar="-- اختر فلاحاً --" data-fr="-- Choisir un agriculteur --">-- اختر فلاحاً --</option>
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="closeNewSurveyFileModal(); showAddExploitantModal();" style="margin-top:10px;width:100%;">
+                    + <span data-ar="إنشاء فلاح جديد" data-fr="Créer un nouvel agriculteur">إنشاء فلاح جديد</span>
+                </button>
+            </div>
+            <div class="field-group" style="margin-bottom:25px;">
+                <label class="field-label"><i class="fas fa-tractor"></i>
+                    <span data-ar="اختر المستغلة" data-fr="Choisir l'exploitation">اختر المستغلة</span>
+                    <span style="color:red;">*</span>
+                </label>
+                <select class="input-box" id="surveyExploitationSelect" disabled>
+                    <option value="" data-ar="-- اختر فلاحاً أولاً --" data-fr="-- Choisir un agriculteur d'abord --">-- اختر فلاحاً أولاً --</option>
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="closeNewSurveyFileModal(); showAddExploitationModal();" style="margin-top:10px;width:100%;">
+                    + <span data-ar="إنشاء مستغلة جديدة" data-fr="Créer une nouvelle exploitation">إنشاء مستغلة جديدة</span>
+                </button>
+            </div>
+            
+            <div id="surveyRemainingFields" style="display:none;">
+                <hr style="margin:20px 0;border-color:#D4AF37;">
+                
+                <!-- VI - الممارسات الزراعية / Pratiques agricoles -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="VI - الممارسات الزراعية - الحقول 75-81" data-fr="VI - Pratiques agricoles - Champs 75-81">VI - الممارسات الزراعية - الحقول 75-81</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="75 - زراعة بيولوجية" data-fr="75 - Agriculture biologique">75 - زراعة بيولوجية</span></label><select class="input-box" id="surveyBiologique"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-certificate"></i> <span data-ar="76 - لديك شهادة؟" data-fr="76 - Certification obtenue ?">76 - لديك شهادة؟</span></label><select class="input-box" id="surveyCertificatBio"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-fish"></i> <span data-ar="77 - استزراع مائي" data-fr="77 - Aquaculture">77 - استزراع مائي</span></label><select class="input-box" id="surveyAquaculture"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-bug"></i> <span data-ar="78 - تربية حلزون" data-fr="78 - Héliciculture">78 - تربية حلزون</span></label><select class="input-box" id="surveyHelicicult"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-seedling"></i> <span data-ar="79 - زراعة فطريات" data-fr="79 - Myciculture">79 - زراعة فطريات</span></label><select class="input-box" id="surveyMyciculture"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-industry"></i> <span data-ar="80 - زراعة تعاقدية" data-fr="80 - Agriculture contractuelle">80 - زراعة تعاقدية</span></label><select class="input-box" id="surveyContractuelle" onchange="toggleFiliereGroup()"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group" id="filiereGroup" style="display:none;"><label class="field-label"><i class="fas fa-list"></i> <span data-ar="81 - الشعبة المتعاقد عليها" data-fr="81 - Filière contractualisée">81 - الشعبة المتعاقد عليها</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyFiliereTomate"> <span data-ar="طماطم" data-fr="Tomates">طماطم</span></label><label><input type="checkbox" id="surveyFiliereHuile"> <span data-ar="حبوب" data-fr="Céréales">حبوب</span></label><label><input type="checkbox" id="surveyFiliereAviculture"> <span data-ar="دواجن" data-fr="Aviculture">دواجن</span></label><label><input type="checkbox" id="surveyFiliereMaraichage"> <span data-ar="خضروات" data-fr="Maraîchage">خضروات</span></label><label><input type="checkbox" id="surveyFilierePomme"> <span data-ar="بطاطا" data-fr="Pomme de terre">بطاطا</span></label><label><input type="checkbox" id="surveyFiliereAutre"> <span data-ar="أخرى" data-fr="Autre">أخرى</span></label></div></div>
+                </div>
+
+                <!-- VII - المواشي / Cheptel -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="VII - المواشي - الحقول 82-105 (عدد الرؤوس)" data-fr="VII - Cheptel - Champs 82-105 (nombre de têtes)">VII - المواشي - الحقول 82-105 (عدد الرؤوس)</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-cow"></i> <span data-ar="82-85 - الأبقار" data-fr="82-85 - Bovins">82-85 - الأبقار</span></label><input type="number" class="input-box" id="surveyBovins" data-placeholder-ar="الإجمالي" data-placeholder-fr="Total" placeholder="الإجمالي"><div style="display:flex;gap:5px;margin-top:5px;"><input type="number" class="input-box" id="surveyBovinsBLL" placeholder="BLL" style="width:33%;"><input type="number" class="input-box" id="surveyBovinsBLA" placeholder="BLA" style="width:33%;"><input type="number" class="input-box" id="surveyBovinsBLM" placeholder="BLM" style="width:33%;"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-sheep"></i> <span data-ar="86-87 - الأغنام" data-fr="86-87 - Ovins">86-87 - الأغنام</span></label><input type="number" class="input-box" id="surveyOvins" data-placeholder-ar="الإجمالي" data-placeholder-fr="Total" placeholder="الإجمالي"><input type="number" class="input-box" id="surveyOvinsBrebis" data-placeholder-ar="منها النعاج" data-placeholder-fr="dont brebis" placeholder="منها النعاج" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-goat"></i> <span data-ar="88-89 - الماعز" data-fr="88-89 - Caprins">88-89 - الماعز</span></label><input type="number" class="input-box" id="surveyCaprins" data-placeholder-ar="الإجمالي" data-placeholder-fr="Total" placeholder="الإجمالي"><input type="number" class="input-box" id="surveyCaprinsChevres" data-placeholder-ar="منها المعزات" data-placeholder-fr="dont chèvres" placeholder="منها المعزات" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-camel"></i> <span data-ar="90-91 - الإبل" data-fr="90-91 - Camelins">90-91 - الإبل</span></label><input type="number" class="input-box" id="surveyCamelins" data-placeholder-ar="الإجمالي" data-placeholder-fr="Total" placeholder="الإجمالي"><input type="number" class="input-box" id="surveyCamelinsFemelles" data-placeholder-ar="منها النوق" data-placeholder-fr="dont femelles" placeholder="منها النوق" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-horse-head"></i> <span data-ar="92-93 - الخيول" data-fr="92-93 - Équins">92-93 - الخيول</span></label><input type="number" class="input-box" id="surveyEquins" data-placeholder-ar="الإجمالي" data-placeholder-fr="Total" placeholder="الإجمالي"><input type="number" class="input-box" id="surveyEquinsFemelles" data-placeholder-ar="منها الأفراس" data-placeholder-fr="dont juments" placeholder="منها الأفراس" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-drumstick-bite"></i> <span data-ar="94-96 - الدواجن" data-fr="94-96 - Aviculture">94-96 - الدواجن</span></label><input type="number" class="input-box" id="surveyPouletsChair" data-placeholder-ar="دجاج" data-placeholder-fr="Poulets" placeholder="دجاج"><input type="number" class="input-box" id="surveyDindes" data-placeholder-ar="ديوك رومي" data-placeholder-fr="Dindes" placeholder="ديوك رومي" style="margin-top:5px;"><input type="number" class="input-box" id="surveyAutreAviculture" data-placeholder-ar="أخرى" data-placeholder-fr="Autres" placeholder="أخرى" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-shield-alt"></i> <span data-ar="97-98 - البغال والحمير" data-fr="97-98 - Mulets et ânes">97-98 - البغال والحمير</span></label><input type="number" class="input-box" id="surveyMulets" data-placeholder-ar="بغال" data-placeholder-fr="Mulets" placeholder="بغال"><input type="number" class="input-box" id="surveyAnes" data-placeholder-ar="حمير" data-placeholder-fr="Ânes" placeholder="حمير" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-paw"></i> <span data-ar="99 - الأرانب" data-fr="99 - Lapins">99 - الأرانب</span></label><input type="number" class="input-box" id="surveyLapins" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-bug"></i> <span data-ar="100-105 - تربية النحل" data-fr="100-105 - Apiculture">100-105 - تربية النحل</span></label><div style="display:flex;gap:5px;"><input type="number" class="input-box" id="surveyRuchesModernes" data-placeholder-ar="خلايا عصرية" data-placeholder-fr="Ruches modernes" placeholder="خلايا عصرية" style="width:50%;"><input type="number" class="input-box" id="surveyRuchesModernesPleines" data-placeholder-ar="ممتلئة" data-placeholder-fr="Pleines" placeholder="ممتلئة" style="width:50%;"></div><div style="display:flex;gap:5px;margin-top:5px;"><input type="number" class="input-box" id="surveyRuchesTraditionnelles" data-placeholder-ar="خلايا تقليدية" data-placeholder-fr="Ruches traditionnelles" placeholder="خلايا تقليدية" style="width:50%;"><input type="number" class="input-box" id="surveyRuchesTraditionnellesPleines" data-placeholder-ar="ممتلئة" data-placeholder-fr="Pleines" placeholder="ممتلئة" style="width:50%;"></div></div>
+                </div>
+
+                <!-- VIII - المباني / Bâtiments -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="VIII - مباني الاستغلال - الحقول 106-122" data-fr="VIII - Bâtiments d'exploitation - Champs 106-122">VIII - مباني الاستغلال - الحقول 106-122</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-home"></i> <span data-ar="106 - مباني سكنية" data-fr="106 - Bâtiments d'habitation">106 - مباني سكنية</span></label><input type="number" class="input-box" id="surveyBatimentsHabitationNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyBatimentsHabitationSurface" data-placeholder-ar="المساحة م²" data-placeholder-fr="Surface m²" placeholder="المساحة م²" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-store"></i> <span data-ar="107-108 - مباني تربية حيوانات" data-fr="107-108 - Bâtiments d'élevage">107-108 - مباني تربية حيوانات</span></label><input type="number" class="input-box" id="surveyBergeriesNb" data-placeholder-ar="حظائر عدد" data-placeholder-fr="Bergeries nb" placeholder="حظائر عدد"><input type="number" class="input-box" id="surveyBergeriesCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"><input type="number" class="input-box" id="surveyEtablesNb" data-placeholder-ar="إسطبلات عدد" data-placeholder-fr="Étables nb" placeholder="إسطبلات عدد" style="margin-top:5px;"><input type="number" class="input-box" id="surveyEtablesCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-horse"></i> <span data-ar="109 - اسطبل خيول" data-fr="109 - Écuries">109 - اسطبل خيول</span></label><input type="number" class="input-box" id="surveyEcuriesNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyEcuriesCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-drumstick-bite"></i> <span data-ar="110 - مدجنة صلب" data-fr="110 - Poulailler classique">110 - مدجنة صلب</span></label><input type="number" class="input-box" id="surveyPoulaillerNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyPoulaillerCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="111 - مدجنة تحت بيوت بلاستيكية" data-fr="111 - Poulailler sous serre">111 - مدجنة تحت بيوت بلاستيكية</span></label><input type="number" class="input-box" id="surveyPserresNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyPserresCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="112 - بيوت بلاستيكية نفقية" data-fr="112 - Serres tunnel">112 - بيوت بلاستيكية نفقية</span></label><input type="number" class="input-box" id="surveySerresTunnelNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveySerresTunnelSurface" data-placeholder-ar="المساحة م²" data-placeholder-fr="Surface m²" placeholder="المساحة م²" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-leaf"></i> <span data-ar="113 - بيوت متعددة القبب" data-fr="113 - Serres multi-chapelles">113 - بيوت متعددة القبب</span></label><input type="number" class="input-box" id="surveyMulserresNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyMulserresSurface" data-placeholder-ar="المساحة م²" data-placeholder-fr="Surface m²" placeholder="المساحة م²" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-warehouse"></i> <span data-ar="114 - مباني تخزين" data-fr="114 - Bâtiments de stockage">114 - مباني تخزين</span></label><input type="number" class="input-box" id="surveyStockageNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyStockageCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-boxes"></i> <span data-ar="115 - مباني منتجات فلاحية" data-fr="115 - Bâtiments produits agricoles">115 - مباني منتجات فلاحية</span></label><input type="number" class="input-box" id="surveyProdAgriNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyProdAgriCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-box"></i> <span data-ar="118 - وحدة توظيب" data-fr="118 - Unité de conditionnement">118 - وحدة توظيب</span></label><input type="number" class="input-box" id="surveyUniteConNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyUniteConCapacite" data-placeholder-ar="السعة" data-placeholder-fr="Capacité" placeholder="السعة" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-industry"></i> <span data-ar="119 - وحدة تحول" data-fr="119 - Unité de transformation">119 - وحدة تحول</span></label><input type="number" class="input-box" id="surveyUniteTransfoNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyUniteTransfoCapacite" data-placeholder-ar="السعة" data-placeholder-fr="Capacité" placeholder="السعة" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-tint"></i> <span data-ar="120 - مركز جمع حليب" data-fr="120 - Centre de collecte de lait">120 - مركز جمع حليب</span></label><input type="number" class="input-box" id="surveyCentreLaitNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyCentreLaitCapacite" data-placeholder-ar="لتر/يوم" data-placeholder-fr="L/jour" placeholder="لتر/يوم" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-building"></i> <span data-ar="121 - مباني أخرى" data-fr="121 - Autres bâtiments">121 - مباني أخرى</span></label><input type="number" class="input-box" id="surveyAutresBatimentsNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyAutresBatimentsCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-snowflake"></i> <span data-ar="122 - غرف تبريد" data-fr="122 - Chambres froides">122 - غرف تبريد</span></label><input type="number" class="input-box" id="surveyChambresFroidesNb" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"><input type="number" class="input-box" id="surveyChambresFroidesCapacite" data-placeholder-ar="السعة م³" data-placeholder-fr="Capacité m³" placeholder="السعة م³" style="margin-top:5px;"></div>
+                </div>
+
+                <!-- IX - الموارد المائية / Ressources hydriques -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="IX - الموارد المائية - الحقول 127-144" data-fr="IX - Ressources hydriques - Champs 127-144">IX - الموارد المائية - الحقول 127-144</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-tint"></i> <span data-ar="127-136 - مصادر المياه" data-fr="127-136 - Sources d'eau">127-136 - مصادر المياه</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveySourcePuits"> <span data-ar="بئر" data-fr="Puits">بئر</span></label><label><input type="checkbox" id="surveySourceForage"> <span data-ar="ثقب" data-fr="Forage">ثقب</span></label><label><input type="checkbox" id="surveySourcePompage"> <span data-ar="ضخ وادي" data-fr="Pompage oued">ضخ وادي</span></label><label><input type="checkbox" id="surveySourceCrues"> <span data-ar="فيض وادي" data-fr="Crues oued">فيض وادي</span></label><label><input type="checkbox" id="surveySourceBarrage"> <span data-ar="سد" data-fr="Barrage">سد</span></label><label><input type="checkbox" id="surveySourceRetenu"> <span data-ar="خزان تلال" data-fr="Retenue collinaire">خزان تلال</span></label><label><input type="checkbox" id="surveySourceFoggara"> <span data-ar="فقارة" data-fr="Foggara">فقارة</span></label><label><input type="checkbox" id="surveySourceSource"> <span data-ar="منبع" data-fr="Source">منبع</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-hand-holding-water"></i> <span data-ar="137-144 - طريقة الري" data-fr="137-144 - Mode d'irrigation">137-144 - طريقة الري</span></label><select class="input-box" id="surveyIrrigation"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="رش" data-ar="رش كلاسيكي" data-fr="Aspersion classique">رش كلاسيكي</option><option value="غمر" data-ar="غمر" data-fr="Submersion">غمر</option><option value="تنقيط" data-ar="تنقيط" data-fr="Goutte à goutte">تنقيط</option><option value="محوري" data-ar="رش محوري" data-fr="Pivot">رش محوري</option><option value="لفاف" data-ar="لفاف" data-fr="Enrouleur">لفاف</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-ruler-combined"></i> <span data-ar="المساحة المسقية" data-fr="Superficie irriguée">المساحة المسقية</span></label><input type="number" step="0.1" class="input-box" id="surveyAreaIrriguee" data-placeholder-ar="هكتار" data-placeholder-fr="hectares" placeholder="هكتار"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-seedling"></i> <span data-ar="المزروعات المسقية" data-fr="Cultures irriguées">المزروعات المسقية</span></label><input type="text" class="input-box" id="surveyCulturesIrriguees" data-placeholder-ar="اذكر المزروعات" data-placeholder-fr="Indiquer les cultures" placeholder="اذكر المزروعات"></div>
+                </div>
+
+                <!-- X - اليد العاملة / Main d'œuvre -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="X - اليد العاملة - الحقول 147-156" data-fr="X - Main d'œuvre - Champs 147-156">X - اليد العاملة - الحقول 147-156</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-clock"></i> <span data-ar="147 - مستثمرون مشاركون" data-fr="147 - Co-exploitants">147 - مستثمرون مشاركون</span></label><div style="display:flex;flex-wrap:wrap;gap:5px;"><input type="number" class="input-box" id="surveyCoexplMalePlein" data-placeholder-ar="ذكور كلي" data-placeholder-fr="H temps plein" placeholder="ذكور كلي" style="width:48%;"><input type="number" class="input-box" id="surveyCoexplFemalePlein" data-placeholder-ar="إناث كلي" data-placeholder-fr="F temps plein" placeholder="إناث كلي" style="width:48%;"><input type="number" class="input-box" id="surveyCoexplMalePartiel" data-placeholder-ar="ذكور جزئي" data-placeholder-fr="H temps partiel" placeholder="ذكور جزئي" style="width:48%;"><input type="number" class="input-box" id="surveyCoexplFemalePartiel" data-placeholder-ar="إناث جزئي" data-placeholder-fr="F temps partiel" placeholder="إناث جزئي" style="width:48%;"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-user-tie"></i> <span data-ar="148 - عمال فلاحيون" data-fr="148 - Ouvriers agricoles">148 - عمال فلاحيون</span></label><div style="display:flex;flex-wrap:wrap;gap:5px;"><input type="number" class="input-box" id="surveyOuvMaleP" data-placeholder-ar="ذكور كلي" data-placeholder-fr="H temps plein" placeholder="ذكور كلي" style="width:48%;"><input type="number" class="input-box" id="surveyOuvFemaleP" data-placeholder-ar="إناث كلي" data-placeholder-fr="F temps plein" placeholder="إناث كلي" style="width:48%;"><input type="number" class="input-box" id="surveyOuvMaleJ" data-placeholder-ar="ذكور جزئي" data-placeholder-fr="H temps partiel" placeholder="ذكور جزئي" style="width:48%;"><input type="number" class="input-box" id="surveyOuvFemaleJ" data-placeholder-ar="إناث جزئي" data-placeholder-fr="F temps partiel" placeholder="إناث جزئي" style="width:48%;"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-globe"></i> <span data-ar="149 - عمال أجانب" data-fr="149 - Travailleurs étrangers">149 - عمال أجانب</span></label><div style="display:flex;flex-wrap:wrap;gap:5px;"><input type="number" class="input-box" id="surveyEtrangMaleP" data-placeholder-ar="ذكور كلي" data-placeholder-fr="H temps plein" placeholder="ذكور كلي" style="width:48%;"><input type="number" class="input-box" id="surveyEtrangFemaleP" data-placeholder-ar="إناث كلي" data-placeholder-fr="F temps plein" placeholder="إناث كلي" style="width:48%;"><input type="number" class="input-box" id="surveyEtrangMaleJ" data-placeholder-ar="ذكور جزئي" data-placeholder-fr="H temps partiel" placeholder="ذكور جزئي" style="width:48%;"><input type="number" class="input-box" id="surveyEtrangFemaleJ" data-placeholder-ar="إناث جزئي" data-placeholder-fr="F temps partiel" placeholder="إناث جزئي" style="width:48%;"></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-users"></i> <span data-ar="150 - فلاح فردي" data-fr="150 - Exploitant individuel">150 - فلاح فردي</span></label><input type="number" class="input-box" id="surveyIndivMaleP" data-placeholder-ar="ذكور" data-placeholder-fr="Hommes" placeholder="ذكور"><input type="number" class="input-box" id="surveyIndivFemaleP" data-placeholder-ar="إناث" data-placeholder-fr="Femmes" placeholder="إناث" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-child"></i> <span data-ar="152 - أطفال (-15 سنة)" data-fr="152 - Enfants (-15 ans)">152 - أطفال (-15 سنة)</span></label><input type="number" class="input-box" id="surveyChildMale" data-placeholder-ar="ذكور" data-placeholder-fr="Garçons" placeholder="ذكور"><input type="number" class="input-box" id="surveyChildFemale" data-placeholder-ar="إناث" data-placeholder-fr="Filles" placeholder="إناث" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-users-slash"></i> <span data-ar="155 - بدون عمل" data-fr="155 - Sans emploi">155 - بدون عمل</span></label><input type="number" class="input-box" id="surveySansEmploiM" data-placeholder-ar="ذكور" data-placeholder-fr="Hommes" placeholder="ذكور"><input type="number" class="input-box" id="surveySansEmploiF" data-placeholder-ar="إناث" data-placeholder-fr="Femmes" placeholder="إناث" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-heart"></i> <span data-ar="156 - مستفيدو الشبكة الاجتماعية" data-fr="156 - Bénéficiaires du filet social">156 - مستفيدو الشبكة الاجتماعية</span></label><input type="number" class="input-box" id="surveyFiletSocial" data-placeholder-ar="العدد" data-placeholder-fr="Nombre" placeholder="العدد"></div>
+                </div>
+
+                <!-- XI - الأسرة الفلاحية / Famille agricole -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="XI - الأسرة الفلاحية - الحقول 157-159" data-fr="XI - Famille agricole - Champs 157-159">XI - الأسرة الفلاحية - الحقول 157-159</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-users"></i> <span data-ar="157 - عدد الأشخاص" data-fr="157 - Nombre de personnes">157 - عدد الأشخاص</span></label><input type="number" class="input-box" id="surveyFamilyMale" data-placeholder-ar="ذكور" data-placeholder-fr="Hommes" placeholder="ذكور"><input type="number" class="input-box" id="surveyFamilyFemale" data-placeholder-ar="إناث" data-placeholder-fr="Femmes" placeholder="إناث" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-user-alt"></i> <span data-ar="158 - كبار (+15 سنة)" data-fr="158 - Adultes (+15 ans)">158 - كبار (+15 سنة)</span></label><input type="number" class="input-box" id="surveyAdulteMale" data-placeholder-ar="ذكور" data-placeholder-fr="Hommes" placeholder="ذكور"><input type="number" class="input-box" id="surveyAdultesFemale" data-placeholder-ar="إناث" data-placeholder-fr="Femmes" placeholder="إناث" style="margin-top:5px;"></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-baby"></i> <span data-ar="159 - أطفال (-15 سنة)" data-fr="159 - Enfants (-15 ans)">159 - أطفال (-15 سنة)</span></label><input type="number" class="input-box" id="surveyFamilyChildMale" data-placeholder-ar="ذكور" data-placeholder-fr="Garçons" placeholder="ذكور"><input type="number" class="input-box" id="surveyFamilyChildFemale" data-placeholder-ar="إناث" data-placeholder-fr="Filles" placeholder="إناث" style="margin-top:5px;"></div>
+                </div>
+
+                <!-- XII - المدخلات / Intrants -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="XII - استخدام المدخلات - الحقل 160" data-fr="XII - Utilisation des intrants - Champ 160">XII - استخدام المدخلات - الحقل 160</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-seedling"></i> <span data-ar="160 - البذور" data-fr="160 - Semences">160 - البذور</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveySemencesSelectionnees"> <span data-ar="مختارة" data-fr="Sélectionnées">مختارة</span></label><label><input type="checkbox" id="surveySemencesCertifiees"> <span data-ar="معتمدة" data-fr="Certifiées">معتمدة</span></label><label><input type="checkbox" id="surveySemencesBio"> <span data-ar="بيولوجية" data-fr="Biologiques">بيولوجية</span></label><label><input type="checkbox" id="surveySemencesFerme"> <span data-ar="بذور المزرعة" data-fr="Semences ferme">بذور المزرعة</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-flask"></i> <span data-ar="الأسمدة والمبيدات" data-fr="Engrais et pesticides">الأسمدة والمبيدات</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyEngraisAzotes"> <span data-ar="آزوتية" data-fr="Azotés">آزوتية</span></label><label><input type="checkbox" id="surveyEngraisPhosphates"> <span data-ar="فوسفاتية" data-fr="Phosphatés">فوسفاتية</span></label><label><input type="checkbox" id="surveyFumureOrganique"> <span data-ar="عضوي" data-fr="Organique">عضوي</span></label><label><input type="checkbox" id="surveyProduitsPhyto"> <span data-ar="مبيدات" data-fr="Phytosanitaires">مبيدات</span></label></div></div>
+                </div>
+
+                <!-- XIII - التمويل / Financement -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="XIII - التمويل والتأمينات - الحقول 161-166" data-fr="XIII - Financement et assurances - Champs 161-166">XIII - التمويل والتأمينات - الحقول 161-166</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-hand-holding-usd"></i> <span data-ar="161 - مصادر التمويل" data-fr="161 - Sources de financement">161 - مصادر التمويل</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyFinancePropress"> <span data-ar="ذاتية" data-fr="Propres">ذاتية</span></label><label><input type="checkbox" id="surveyFinanceCredit"> <span data-ar="قرض بنكي" data-fr="Crédit bancaire">قرض بنكي</span></label><label><input type="checkbox" id="surveyFinanceSoutien"> <span data-ar="دعم عمومي" data-fr="Soutien public">دعم عمومي</span></label><label><input type="checkbox" id="surveyFinanceEmprunt"> <span data-ar="استلاف" data-fr="Emprunt">استلاف</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-university"></i> <span data-ar="162 - نوع القرض" data-fr="162 - Type de crédit">162 - نوع القرض</span></label><select class="input-box" id="surveyTypeCredit"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="كلاسيكي" data-ar="كلاسيكي" data-fr="Classique">كلاسيكي</option><option value="Ettahadi">Ettahadi / التحدي</option><option value="Rfig">Rfig / الرفيق</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-university"></i> <span data-ar="163 - نوع الدعم" data-fr="163 - Type de soutien">163 - نوع الدعم</span></label><select class="input-box" id="surveyTypeSoutien"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="مالي" data-ar="مالي" data-fr="Financier">مالي</option><option value="عتاد" data-ar="عتاد" data-fr="Matériel">عتاد</option><option value="محاصيل" data-ar="محاصيل" data-fr="Cultures">محاصيل</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-shield-heart"></i> <span data-ar="164 - تأمين فلاحي" data-fr="164 - Assurance agricole">164 - تأمين فلاحي</span></label><select class="input-box" id="surveyAssuranceAgricole" onchange="toggleAssuranceCompanies()"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group" id="assuranceCompanyGroup" style="display:none;"><label class="field-label"><i class="fas fa-file-contract"></i> <span data-ar="165 - شركة التأمين" data-fr="165 - Compagnie d'assurance">165 - شركة التأمين</span></label><select class="input-box" id="surveyCompagnieAssurance"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="CRMA">CRMA</option><option value="أخرى" data-ar="أخرى" data-fr="Autre">أخرى</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-list-check"></i> <span data-ar="166 - نوع التأمين" data-fr="166 - Type d'assurance">166 - نوع التأمين</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyAssuranceTerre"> <span data-ar="أرض" data-fr="Terres">أرض</span></label><label><input type="checkbox" id="surveyAssuranceMaterial"> <span data-ar="معدات" data-fr="Matériel">معدات</span></label><label><input type="checkbox" id="surveyAssuranceMahassel"> <span data-ar="محاصيل" data-fr="Récoltes">محاصيل</span></label><label><input type="checkbox" id="surveyAssuranceMawachi"> <span data-ar="مواشي" data-fr="Cheptel">مواشي</span></label></div></div>
+                </div>
+
+                <!-- XIV - محيط المستثمرة / Environnement -->
+                <h4 style="color:#1C4B2D;margin:15px 0;" data-ar="XIV - محيط المستثمرة - الحقول 167-171" data-fr="XIV - Environnement de l'exploitation - Champs 167-171">XIV - محيط المستثمرة - الحقول 167-171</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+                    <div class="field-group"><label class="field-label"><i class="fas fa-industry"></i> <span data-ar="167 - وجود مقدمي خدمات" data-fr="167 - Présence de prestataires">167 - وجود مقدمي خدمات</span></label><select class="input-box" id="surveyFournisseurs"><option value="" data-ar="اختر" data-fr="Choisir">اختر</option><option value="نعم" data-ar="نعم" data-fr="Oui">نعم</option><option value="لا" data-ar="لا" data-fr="Non">لا</option></select></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-store"></i> <span data-ar="168 - مؤسسات قريبة" data-fr="168 - Établissements à proximité">168 - مؤسسات قريبة</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyProximiteBanque"> <span data-ar="بنك" data-fr="Banque">بنك</span></label><label><input type="checkbox" id="surveyProximitePoste"> <span data-ar="بريد" data-fr="Poste">بريد</span></label><label><input type="checkbox" id="surveyProximiteVet"> <span data-ar="بيطري" data-fr="Vétérinaire">بيطري</span></label><label><input type="checkbox" id="surveyProximiteCooperative"> <span data-ar="تعاونية" data-fr="Coopérative">تعاونية</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-shopping-cart"></i> <span data-ar="169 - تسويق المنتجات" data-fr="169 - Commercialisation des produits">169 - تسويق المنتجات</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyVentePied"> <span data-ar="بيع على الجذع" data-fr="Vente sur pied">بيع على الجذع</span></label><label><input type="checkbox" id="surveyVenteGros"> <span data-ar="سوق الجملة" data-fr="Marché de gros">سوق الجملة</span></label><label><input type="checkbox" id="surveyVenteDirecte"> <span data-ar="بيع مباشر" data-fr="Vente directe">بيع مباشر</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-globe-africa"></i> <span data-ar="170 - سوق التسويق" data-fr="170 - Marché de commercialisation">170 - سوق التسويق</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyMarcheLocal"> <span data-ar="محلي" data-fr="Local">محلي</span></label><label><input type="checkbox" id="surveyMarcheNational"> <span data-ar="وطني" data-fr="National">وطني</span></label><label><input type="checkbox" id="surveyMarcheInternational"> <span data-ar="دولي" data-fr="International">دولي</span></label></div></div>
+                    <div class="field-group"><label class="field-label"><i class="fas fa-handshake"></i> <span data-ar="171 - الانخراط في المنظمات" data-fr="171 - Adhésion aux organisations">171 - الانخراط في المنظمات</span></label><div style="display:flex;flex-wrap:wrap;gap:10px;"><label><input type="checkbox" id="surveyCooperativeAgricole"> <span data-ar="تعاونية" data-fr="Coopérative">تعاونية</span></label><label><input type="checkbox" id="surveyAssociationProfessionnelle"> <span data-ar="جمعية مهنية" data-fr="Association professionnelle">جمعية مهنية</span></label><label><input type="checkbox" id="surveyGroupeInteret"> <span data-ar="مجموعة مصالح" data-fr="Groupe d'intérêt">مجموعة مصالح</span></label></div></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:30px;display:flex;gap:15px;justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeNewSurveyFileModal()">
+                <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+            </button>
+            <button class="btn btn-success" id="saveSurveyFileBtn" onclick="saveSurveyFile()" disabled>
+                <span data-ar="حفظ ملف الإحصاء" data-fr="Enregistrer le fichier de recensement">حفظ ملف الإحصاء</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== بروفايل المستغل / Profil exploitant ========== -->
+<div id="exploitantProfileModal" class="profile-modal-overlay">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar"><i class="fas fa-user-tie"></i></div>
+            <div class="profile-name" id="exploitantProfileName"></div>
+            <div class="profile-badge" id="exploitantProfileBadge"></div>
+        </div>
+        <div id="exploitantProfileContent"></div>
+        <button class="close-profile-btn" onclick="closeExploitantProfile()">
+            <i class="fas fa-times"></i> <span data-ar="إغلاق" data-fr="Fermer">إغلاق</span>
+        </button>
+    </div>
+</div>
+
+<!-- ========== بروفايل المستغلة / Profil exploitation ========== -->
+<div id="exploitationProfileModal" class="profile-modal-overlay">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar"><i class="fas fa-tractor"></i></div>
+            <div class="profile-name" id="exploitationProfileName"></div>
+            <div class="profile-badge" id="exploitationProfileBadge"></div>
+        </div>
+        <div id="exploitationProfileContent"></div>
+        <button class="close-profile-btn" onclick="closeExploitationProfile()">
+            <i class="fas fa-times"></i> <span data-ar="إغلاق" data-fr="Fermer">إغلاق</span>
+        </button>
+    </div>
+</div>
+
+<!-- ========== بروفايل ملف الإحصاء / Profil fichier recensement ========== -->
+<div id="surveyFileProfileModal" class="profile-modal-overlay">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar"><i class="fas fa-file-alt"></i></div>
+            <div class="profile-name" id="surveyFileProfileName"></div>
+            <div class="profile-badge" id="surveyFileProfileBadge"></div>
+        </div>
+        <div id="surveyFileProfileContent"></div>
+        <button class="close-profile-btn" onclick="closeSurveyFileProfile()">
+            <i class="fas fa-times"></i> <span data-ar="إغلاق" data-fr="Fermer">إغلاق</span>
+        </button>
+    </div>
+</div>
+
+<!-- ========== بروفايل الحملة / Profil campagne ========== -->
+<div id="campaignProfileModal" class="profile-modal-overlay">
+    <div class="campaign-profile-container">
+        <div class="campaign-profile-header">
+            <div class="campaign-profile-title" id="campaignProfileTitle"></div>
+            <div class="campaign-profile-meta" id="campaignProfileMeta"></div>
+        </div>
+        <div class="campaign-stats-grid" id="campaignProfileStats"></div>
+        <div id="campaignProfileFiles" style="padding: 25px;"></div>
+        <div style="padding: 0 25px 25px; display: flex; justify-content: flex-end;">
+            <button class="close-profile-btn" onclick="closeCampaignProfile()" style="margin: 0;">
+                <i class="fas fa-times"></i> <span data-ar="إغلاق" data-fr="Fermer">إغلاق</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== نافذة إنشاء حملة / Modale nouvelle campagne ========== -->
+<div id="createCampaignModal" class="create-campaign-modal-overlay">
+    <div class="create-campaign-card">
+        <div class="create-campaign-header">
+            <h3><i class="fas fa-plus-circle"></i> <span data-ar="حملة إحصاء جديدة" data-fr="Nouvelle campagne de recensement">حملة إحصاء جديدة</span></h3>
+            <p data-ar="أدخل معلومات الحملة الجديدة" data-fr="Saisir les informations de la nouvelle campagne">أدخل معلومات الحملة الجديدة</p>
+        </div>
+        <div class="create-campaign-body">
+            <div class="form-group">
+                <label><i class="fas fa-tag"></i> <span data-ar="اسم الحملة" data-fr="Nom de la campagne">اسم الحملة</span> <span style="color: red;">*</span></label>
+                <input type="text" id="newCampaignName" data-placeholder-ar="مثال: حملة ولاية تيارت 2026" data-placeholder-fr="Ex : Campagne wilaya Tiaret 2026" placeholder="مثال: حملة ولاية تيارت 2026">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> <span data-ar="الولاية / المنطقة" data-fr="Wilaya / Région">الولاية / المنطقة</span></label>
+                <input type="text" id="newCampaignRegion" data-placeholder-ar="مثال: تيارت" data-placeholder-fr="Ex : Tiaret" placeholder="مثال: تيارت">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt"></i> <span data-ar="تاريخ البداية" data-fr="Date de début">تاريخ البداية</span></label>
+                <input type="date" id="newCampaignStartDate">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-check"></i> <span data-ar="تاريخ النهاية (اختياري)" data-fr="Date de fin (optionnel)">تاريخ النهاية (اختياري)</span></label>
+                <input type="date" id="newCampaignEndDate">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-align-left"></i> <span data-ar="وصف الحملة" data-fr="Description de la campagne">وصف الحملة</span></label>
+                <textarea id="newCampaignDescription" rows="3" style="width:100%; padding:12px; border-radius:15px; border:2px solid rgba(28,75,45,0.15); font-family:'Cairo';"
+                    data-placeholder-ar="وصف تفصيلي للحملة..." data-placeholder-fr="Description détaillée de la campagne..."
+                    placeholder="وصف تفصيلي للحملة..."></textarea>
+            </div>
+        </div>
+        <div class="create-campaign-footer">
+            <button class="btn-modern btn-modern-danger" onclick="closeCreateCampaignModal()">
+                <i class="fas fa-times"></i> <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+            </button>
+            <button class="btn-modern btn-modern-primary" onclick="saveNewCampaign()">
+                <i class="fas fa-save"></i> <span data-ar="إنشاء الحملة" data-fr="Créer la campagne">إنشاء الحملة</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== نافذة تعديل الحملة / Modale modification campagne ========== -->
+<div id="editCampaignModal" class="create-campaign-modal-overlay">
+    <div class="create-campaign-card">
+        <div class="create-campaign-header">
+            <h3><i class="fas fa-edit"></i> <span data-ar="تعديل حملة الإحصاء" data-fr="Modifier la campagne de recensement">تعديل حملة الإحصاء</span></h3>
+            <p data-ar="قم بتعديل معلومات الحملة" data-fr="Modifier les informations de la campagne">قم بتعديل معلومات الحملة</p>
+        </div>
+        <div class="create-campaign-body">
+            <input type="hidden" id="editCampaignId">
+            <div class="form-group">
+                <label><i class="fas fa-tag"></i> <span data-ar="اسم الحملة" data-fr="Nom de la campagne">اسم الحملة</span> <span style="color: red;">*</span></label>
+                <input type="text" id="editCampaignName" data-placeholder-ar="مثال: حملة ولاية تيارت 2026" data-placeholder-fr="Ex : Campagne wilaya Tiaret 2026" placeholder="مثال: حملة ولاية تيارت 2026">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> <span data-ar="الولاية / المنطقة" data-fr="Wilaya / Région">الولاية / المنطقة</span></label>
+                <input type="text" id="editCampaignRegion" data-placeholder-ar="مثال: تيارت" data-placeholder-fr="Ex : Tiaret" placeholder="مثال: تيارت">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt"></i> <span data-ar="تاريخ البداية" data-fr="Date de début">تاريخ البداية</span></label>
+                <input type="date" id="editCampaignStartDate">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-check"></i> <span data-ar="تاريخ النهاية (اختياري)" data-fr="Date de fin (optionnel)">تاريخ النهاية (اختياري)</span></label>
+                <input type="date" id="editCampaignEndDate">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-align-left"></i> <span data-ar="وصف الحملة" data-fr="Description de la campagne">وصف الحملة</span></label>
+                <textarea id="editCampaignDescription" rows="3" style="width:100%; padding:12px; border-radius:15px; border:2px solid rgba(28,75,45,0.15); font-family:'Cairo';"
+                    data-placeholder-ar="وصف تفصيلي للحملة..." data-placeholder-fr="Description détaillée de la campagne..."
+                    placeholder="وصف تفصيلي للحملة..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-flag-checkered"></i> <span data-ar="حالة الحملة" data-fr="Statut de la campagne">حالة الحملة</span></label>
+                <select id="editCampaignStatus" style="width:100%; padding:12px; border-radius:15px; border:2px solid rgba(28,75,45,0.15);">
+                    <option value="active" data-ar="نشطة" data-fr="Active">نشطة</option>
+                    <option value="completed" data-ar="مكتملة" data-fr="Terminée">مكتملة</option>
+                    <option value="pending" data-ar="قيد التحضير" data-fr="En préparation">قيد التحضير</option>
+                    <option value="archived" data-ar="مؤرشفة" data-fr="Archivée">مؤرشفة</option>
+                </select>
+            </div>
+        </div>
+        <div class="create-campaign-footer">
+            <button class="btn-modern btn-modern-danger" onclick="closeEditCampaignModal()">
+                <i class="fas fa-times"></i> <span data-ar="إلغاء" data-fr="Annuler">إلغاء</span>
+            </button>
+            <button class="btn-modern btn-modern-primary" onclick="updateCampaign()">
+                <i class="fas fa-save"></i> <span data-ar="حفظ التعديلات" data-fr="Enregistrer les modifications">حفظ التعديلات</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="../js/recensement.js">
+
+    
+</script>
+
+</body>
+</html>

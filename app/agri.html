@@ -1,0 +1,1566 @@
+﻿<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recensement Agricole — Gestion</title>
+<style>
+  :root {
+    --primary: #2d7a3a;
+    --primary-dark: #1f5c2a;
+    --accent: #16a34a;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #879d87; color: var(--text); min-height: 100vh; position: relative; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(28,75,45,0.05) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(212,175,55,0.08) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(11,45,28,0.03) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+  .app-layout { display: flex; min-height: 100vh; gap: 20px; padding: 20px; background: transparent; position: relative; z-index: 1; }
+  .sidebar { width: 240px; background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(28,75,45,0.2); border-radius: 35px; padding: 25px 15px; height: fit-content; position: sticky; top: 20px; box-shadow: 0 20px 40px -10px rgba(28,75,45,0.2); color: #1C4B2D; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 0 10px 20px; border-bottom: 3px solid #D4AF37; font-size: 1.1rem; font-weight: 700; color: #1C4B2D; letter-spacing: 0.3px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .sidebar-logo span { font-size: 1.4rem; }
+  .sidebar-logo .logo-sub { font-size: .72rem; font-weight: 400; color: #2E6B3E; margin-top: 2px; display: block; }
+  .sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+  .nav-section { padding: 8px 10px 4px; font-size: .68rem; text-transform: uppercase; letter-spacing: 1px; color: #2E6B3E; font-weight: 700; opacity: 0.7; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 18px; cursor: pointer; font-size: .88rem; color: #1C4B2D; border-radius: 20px; transition: all .18s; text-decoration: none; margin-bottom: 4px; opacity: 0.8; }
+  .nav-item:hover { background: rgba(28,75,45,0.1); opacity: 1; color: #0B2D1C; }
+  .nav-item.active { background: linear-gradient(135deg, #1C4B2D, #2E6B3E); color: #fff; opacity: 1; box-shadow: 0 4px 15px rgba(28,75,45,0.3); }
+  .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+  .sidebar-footer { padding: 14px 10px 0; border-top: 1px solid rgba(28,75,45,0.15); font-size: .78rem; color: #2E6B3E; display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 58px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .topbar-title { font-size: 1.05rem; font-weight: 600; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .user-badge { background: #f0faf1; border: 1px solid #a7d7ac; color: #1f5c2a; border-radius: 20px; padding: 5px 14px; font-size: .8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  .page-title-ar { font-size: .82rem; color: var(--text-muted); margin-top: 2px; }
+  .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow-x: auto; }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
+  .card-title { font-size: .92rem; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 800px; }
+  thead { background: #f8fafc; }
+  thead th { padding: 11px 16px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody td { padding: 12px 16px; color: var(--text); vertical-align: middle; }
+  tbody tr:last-child { border-bottom: none; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: .74rem; font-weight: 600; }
+  .badge-blue { background: #f0faf1; color: #1f5c2a; }
+  .badge-green { background: #f0fdf4; color: #16a34a; }
+  .badge-orange { background: #fff7ed; color: #c2410c; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: .84rem; font-weight: 600; transition: all .15s; white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--accent); color: #fff; }
+  .btn-success:hover { background: #15803d; }
+  .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: #f8fafc; }
+  .btn-sm { padding: 5px 10px; font-size: .78rem; border-radius: 6px; }
+  .btn-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+  .btn-danger:hover { background: #fecaca; }
+  .action-btns { display: flex; gap: 6px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalIn .2s ease; width: 700px; max-width: 96vw; }
+  @keyframes modalIn { from { opacity:0; transform:scale(.96) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; background: #f8fafc; border-radius: 14px 14px 0 0; flex-shrink: 0; }
+  .modal-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+  .modal-title-ar { font-size: .8rem; color: var(--text-muted); margin-top: 2px; }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8; line-height: 1; padding: 2px; transition: color .15s; }
+  .modal-close:hover { color: #ef4444; }
+  .modal-body { padding: 20px 22px; overflow-y: auto; flex: 1; max-height: 70vh; }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: #fff; border-radius: 0 0 14px 14px; flex-shrink: 0; }
+  .modal-footer .btn { justify-content: center; padding: 13px 20px; font-size: .95rem; border-radius: 10px; font-weight: 600; }
+  .btn-footer-primary { background: linear-gradient(135deg, #1C4B2D, #2E6B3E); color: #fff; border: none; flex: 2; }
+  .btn-footer-primary:hover { opacity: .92; }
+  .btn-footer-cancel { background: #fff; color: var(--text); border: 1px solid var(--border); flex: 1; }
+  .btn-footer-cancel:hover { background: #f8fafc; }
+  .form-section { margin-bottom: 20px; }
+  .form-section-title { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--primary); padding: 8px 0 10px; border-bottom: 1px solid #e0eaff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .form-section-title .ar { font-style: normal; color: #94a3b8; font-size: .78rem; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: .8rem; font-weight: 600; color: var(--text); }
+  .form-label .ar { font-weight: 400; color: var(--text-muted); font-size: .76rem; }
+  .form-control { padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: .84rem; color: var(--text); background: #fff; transition: border .15s, box-shadow .15s; outline: none; font-family: inherit; }
+  .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+  .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: .84rem; cursor: pointer; }
+  .checkbox-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 2000; max-height: 200px; overflow-y: auto; display: none; }
+  .autocomplete-dropdown.open { display: block; }
+  .autocomplete-item { padding: 9px 14px; font-size: .84rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.highlighted { background: #f0faf1; color: var(--primary); }
+  .autocomplete-item .sub { font-size: .74rem; color: var(--text-muted); }
+  .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #1a3d2b; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: .84rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #16a34a; }
+  .toast.error { background: #dc2626; }
+  .detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: .85rem; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { font-weight: 600; color: var(--text-muted); min-width: 180px; flex-shrink: 0; }
+  .detail-value { color: var(--text); }
+  .search-bar { display: flex; gap: 10px; padding: 14px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); }
+  .search-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: .84rem; outline: none; }
+  .search-input:focus { border-color: var(--primary); }
+  .empty-state { padding: 40px; text-align: center; color: var(--text-muted); font-size: .9rem; }
+  @media (max-width: 700px) { .sidebar { display: none; } .form-grid { grid-template-columns: 1fr; } }
+  .parcelle-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .parcelle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .parcelle-title { font-weight: 600; color: var(--primary); }
+
+  /* Campagnes */
+  .campagnes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-top: 4px; }
+  .campagne-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 22px; display: flex; flex-direction: column; gap: 12px; transition: box-shadow .2s; }
+  .campagne-card:hover { box-shadow: 0 8px 28px rgba(28,75,45,0.13); }
+  .campagne-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .campagne-card-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .campagne-card-year { font-size: .8rem; color: var(--text-muted); margin-top: 3px; }
+  .badge-actif { background: #dcfce7; color: #16a34a; }
+  .badge-cloture { background: #f1f5f9; color: #64748b; }
+  .badge-preparation { background: #fef9c3; color: #b45309; }
+  .campagne-perimetre { font-size: .82rem; color: var(--text-muted); }
+  .campagne-perimetre strong { color: var(--text); font-weight: 600; }
+  .campagne-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; }
+  .campagne-stat { background: #f8fafc; padding: 10px 14px; text-align: center; }
+  .campagne-stat .val { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+  .campagne-stat .lbl { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+  .campagne-progress { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+  .campagne-progress-bar { height: 100%; background: linear-gradient(90deg, #1C4B2D, #2E6B3E); border-radius: 99px; transition: width .4s; }
+  .campagne-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .campagne-actions .btn { font-size: .78rem; padding: 6px 12px; border-radius: 8px; }
+  .btn-gold { background: linear-gradient(135deg, #1C4B2D, #2E6B3E); color: #fff; }
+  .btn-gold:hover { opacity: 0.9; }
+  .campagne-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+  /* Wilaya tags */
+  .wilaya-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .wilaya-tag { background: #f0faf1; border: 1px solid #a7d7ac; color: #1f5c2a; border-radius: 20px; padding: 2px 10px; font-size: .75rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .wilaya-tag .rm { cursor: pointer; font-size: .9rem; opacity: .6; }
+  .wilaya-tag .rm:hover { opacity: 1; color: #dc2626; }
+
+  /* ===== WIZARD RECENSEMENT ===== */
+  .wizard-overlay { position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(2px); }
+  .wizard-overlay.open { display:flex; }
+  .wizard-modal { background:#f1f5f9;border-radius:16px;width:900px;max-width:97vw;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);animation:modalIn .2s ease; }
+  .wizard-header { background:#fff;border-radius:16px 16px 0 0;padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0; }
+  .wizard-header-top { display:flex;align-items:flex-start;justify-content:space-between; }
+  .wizard-header-title { font-size:1.1rem;font-weight:700;color:var(--text); }
+  .wizard-header-breadcrumb { font-size:.76rem;color:var(--text-muted);margin-top:3px; }
+  .wizard-close { background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8;line-height:1;padding:2px;transition:color .15s; }
+  .wizard-close:hover { color:#ef4444; }
+  .wizard-progress-bar-wrap { margin-top:12px; }
+  .wizard-progress-track { height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden; }
+  .wizard-progress-fill { height:100%;background:linear-gradient(90deg,#1C4B2D,#2E6B3E);border-radius:99px;transition:width .35s; }
+  .wizard-step-label { font-size:.74rem;color:var(--text-muted);margin-top:5px; }
+  .wizard-steps-nav { display:flex;flex-wrap:wrap;gap:8px;padding:14px 24px;background:#f8fafc;border-bottom:1px solid var(--border);flex-shrink:0; }
+  .wstep-btn { display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .15s;white-space:nowrap; }
+  .wstep-btn.active { border-color:#1C4B2D;background:#f0faf1;color:#1C4B2D; }
+  .wstep-btn.done { border-color:#a7d7ac;background:#f0faf1;color:#2E6B3E; }
+  .wstep-btn .wstep-icon { font-size:.85rem; }
+  .wizard-body { flex:1;overflow-y:auto;padding:22px 24px; }
+  .wizard-section-title { font-size:1rem;font-weight:700;color:var(--text);margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid #e2e8f0; }
+  .wizard-card { background:#fff;border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px; }
+  .wiz-form-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+  .wiz-form-grid.three { grid-template-columns:1fr 1fr 1fr; }
+  .wiz-form-group { display:flex;flex-direction:column;gap:5px; }
+  .wiz-form-group.full { grid-column:1/-1; }
+  .wiz-label { font-size:.8rem;font-weight:600;color:var(--text); }
+  .wiz-label .req { color:red; }
+  .wiz-input,.wiz-select,.wiz-textarea { padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;color:var(--text);background:#fff;outline:none;font-family:inherit;transition:border .15s; }
+  .wiz-input:focus,.wiz-select:focus,.wiz-textarea:focus { border-color:#1C4B2D;box-shadow:0 0 0 3px rgba(28,75,45,.1); }
+  .wiz-input[readonly],.wiz-input:disabled { background:#f8fafc;color:var(--text-muted); }
+  .wiz-filter-row { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end; }
+  .wiz-filter-row .wiz-form-group { flex:1;min-width:140px; }
+  .wizard-footer { background:#fff;border-radius:0 0 16px 16px;border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+  .wizard-footer-left { display:flex;gap:10px; }
+  .wizard-footer-right { display:flex;gap:10px; }
+  .btn-wiz-next { background:linear-gradient(135deg,#1C4B2D,#2E6B3E);color:#fff;border:none;padding:10px 24px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .15s; }
+  .btn-wiz-next:hover { opacity:.9; }
+  .btn-wiz-prev { background:#fff;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer; }
+  .btn-wiz-draft { background:#fff;color:#1C4B2D;border:1.5px solid #1C4B2D;padding:10px 18px;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer; }
+  .btn-wiz-submit { background:linear-gradient(135deg,#1C4B2D,#2E6B3E);color:#fff;border:none;padding:10px 22px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer; }
+  .btn-wiz-quit { background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border);padding:10px 16px;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer; }
+  .wstep-page { display:none; }
+  .wstep-page.active { display:block; }
+  .wiz-exploitation-select { padding:12px 14px;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-size:.88rem;color:var(--text-muted);cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>🌾</span>
+      <div>Agri-Recensement<span class="logo-sub">Wilaya — Gestion agricole</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Gestion</div>
+      <a class="nav-item" onclick="showPage('campagnes',event)"><span class="icon">📅</span> Campagnes</a>
+      <a class="nav-item active" onclick="showPage('exploitants',event)"><span class="icon">👨‍🌾</span> Exploitants</a>
+      <a class="nav-item" onclick="showPage('exploitations',event)"><span class="icon">🏡</span> Exploitations</a>
+    </nav>
+    <div class="sidebar-footer"><span>👤</span> Admin System</div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Gestion des Exploitants</div>
+      <div class="topbar-right">
+        <div class="user-badge">📅 Campagne 2025</div>
+      </div>
+    </div>
+    <div class="content-area">
+
+      <!-- PAGE CAMPAGNES -->
+      <div class="page" id="page-campagnes">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Campagnes de Recensement</div>
+            <div class="page-title-ar">حملات الإحصاء الفلاحي</div>
+          </div>
+          <button class="btn btn-gold" onclick="openModal('modal-campagne'); setModalModeCampagne('add')">+ Nouvelle Campagne</button>
+        </div>
+        <div class="campagne-toolbar">
+          <button class="btn btn-outline btn-sm" onclick="showPage('exploitants',event)">← Retour</button>
+          <button class="btn btn-outline btn-sm" onclick="renderCampagnes()">■ Actualiser</button>
+        </div>
+        <div class="campagnes-grid" id="campagnes-grid"></div>
+      </div>
+
+      <!-- PAGE EXPLOITANTS -->
+      <div class="page active" id="page-exploitants">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Exploitants agricoles</div>
+            <div class="page-title-ar">المستغلون الفلاحيون</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-exploitant'); setModalMode('exploitant','add')">+ Ajouter exploitant</button>
+        </div>
+        <div class="card">
+          <div class="search-bar">
+            <input class="search-input" id="search-exploitants" placeholder="🔍 Rechercher exploitant..." oninput="filterTable('exploitants-tbody', this.value, [0,1,2])">
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Nom / Prénom</th><th>NIN</th><th>Téléphone</th><th>Niveau</th><th>Assurance</th><th>Nature</th><th>Actions</th></tr></thead>
+            <tbody id="exploitants-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGE EXPLOITATIONS -->
+      <div class="page" id="page-exploitations">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Exploitations agricoles</div>
+            <div class="page-title-ar">المستثمرات الفلاحية</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-exploitation'); setModalMode('exploitation','add'); resetParcelles();">+ Ajouter exploitation</button>
+        </div>
+        <div class="card">
+          <div class="search-bar" style="flex-direction:column;gap:8px">
+            <input class="search-input" id="search-exploitations" placeholder="🔍 Rechercher exploitation..." oninput="filterTable('exploitations-tbody', this.value, [0,1,2])">
+            <select class="search-input" id="filter-wilaya-expl" style="background:#fff;cursor:pointer" onchange="filterExploitationsByWilaya(this.value)">
+              <option value="">Toutes les wilayas</option>
+            </select>
+            <select class="search-input" id="filter-commune-expl" style="background:#fff;cursor:pointer" onchange="filterExploitationsByCommune(this.value)">
+              <option value="">Toutes les communes</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Nom</th><th>Exploitant</th><th>Wilaya</th><th>Commune</th><th>Activité</th><th>Superficie (ha)</th><th>Blocks / Parcelles</th><th>Statut</th><th>Internet</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="exploitations-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMPAGNE -->
+<div class="modal-overlay" id="modal-campagne">
+  <div class="modal" style="width:760px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-campagne-title">Nouvelle Campagne</div>
+        <div class="modal-title-ar">حملة إحصاء جديدة</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-campagne')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nom (francais) <span style="color:red">*</span></label>
+            <input class="form-control" id="c-nom-fr" type="text" placeholder="ex: Campagne 2026">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom (arabe) <span class="ar">الاسم بالعربية</span></label>
+            <input class="form-control" id="c-nom-ar" type="text" placeholder="ex: حملة 2026" dir="rtl">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Annee <span style="color:red">*</span></label>
+            <input class="form-control" id="c-annee" type="number" placeholder="ex: 2026" min="2000" max="2100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+              <span class="badge badge-preparation">PREPARATION</span>
+              <span style="font-size:.8rem;color:var(--text-muted)">Le statut est géré via les boutons Activer / Clôturer</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de debut</label>
+            <input class="form-control" id="c-date-debut" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de fin</label>
+            <input class="form-control" id="c-date-fin" type="date">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Description (francais)</label>
+            <textarea class="form-control" id="c-desc-fr" rows="3" placeholder="Description de la campagne..."></textarea>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Description (arabe) <span class="ar">الوصف بالعربية</span></label>
+            <textarea class="form-control" id="c-desc-ar" rows="3" placeholder="وصف الحملة بالعربية..." dir="rtl"></textarea>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Périmètre territorial <span class="ar">النطاق الجغرافي</span></label>
+            <div style="border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden;margin-top:4px">
+              <!-- Portée nationale / tags -->
+              <div id="c-wilaya-tags" style="padding:14px 16px;min-height:48px;font-size:.88rem;color:var(--text-muted);background:#fff"></div>
+              <!-- Rechercher -->
+              <div style="margin:0 12px 10px 12px">
+                <input id="c-wilaya-filter" type="text" placeholder="Rechercher..." oninput="filterWilayaList(this.value)" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.88rem;outline:none;background:#fff;color:var(--text);font-family:inherit">
+              </div>
+              <!-- Ajouter une wilaya + -->
+              <div style="margin:0 12px 12px 12px">
+                <div onclick="toggleWilayaDropdown()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.88rem;color:var(--text);user-select:none">
+                  <span>Ajouter une wilaya</span>
+                  <span style="width:26px;height:26px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text-muted);background:#f8fafc;flex-shrink:0">+</span>
+                </div>
+                <div id="c-wilaya-list" style="display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:220px;overflow-y:auto;background:#fff"></div>
+              </div>
+            </div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px">Laissez vide pour une portée nationale. Ajoutez des wilayas pour restreindre.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-footer-primary" onclick="saveCampagne()">Enregistrer</button>
+      <button class="btn btn-footer-cancel" onclick="closeModal('modal-campagne')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EXPLOITANT -->
+<div class="modal-overlay" id="modal-exploitant">
+  <div class="modal" style="width:780px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-exploitant-title">Ajouter un exploitant agricole</div><div class="modal-title-ar">إضافة مستغل فلاحي</div></div>
+      <button class="modal-close" onclick="closeModal('modal-exploitant')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-section-title">👤 Identité <span class="ar">/ الهوية الشخصية</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Nom (FR) <span style="color:red">*</span></label><input class="form-control" id="e-nom-fr" type="text" placeholder="Nom de famille"></div>
+          <div class="form-group"><label class="form-label">Nom (AR) <span class="ar">اللقب</span></label><input class="form-control" id="e-nom-ar" type="text" placeholder="اللقب بالعربية" dir="rtl"></div>
+          <div class="form-group"><label class="form-label">Prénom (FR) <span style="color:red">*</span></label><input class="form-control" id="e-prenom-fr" type="text" placeholder="Prénom"></div>
+          <div class="form-group"><label class="form-label">Prénom (AR) <span class="ar">الاسم</span></label><input class="form-control" id="e-prenom-ar" type="text" placeholder="الاسم بالعربية" dir="rtl"></div>
+          <div class="form-group"><label class="form-label">Sexe <span class="ar">الجنس</span></label><select class="form-control" id="e-sexe"><option value="1">Masculin / ذكر</option><option value="2">Féminin / أنثى</option></select></div>
+          <div class="form-group"><label class="form-label">Date de naissance <span class="ar">تاريخ الميلاد</span></label><input class="form-control" id="e-ddn" type="date"></div>
+          <div class="form-group full"><label class="form-label">NIN (N° Identifiant National) <span style="color:red">*</span></label><input class="form-control" id="e-nin" type="text" maxlength="18" placeholder="Numéro identifiant national"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">📱 Contact & Profil <span class="ar">/ الاتصال والملف</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Téléphone <span class="ar">رقم الهاتف</span></label><input class="form-control" id="e-tel" type="tel" placeholder="0550 xxx xxx"></div>
+          <div class="form-group"><label class="form-label">Email <span class="ar">البريد الإلكتروني</span></label><input class="form-control" id="e-email" type="email" placeholder="exemple@mail.com"></div>
+          <div class="form-group full"><label class="form-label">Adresse (FR) <span class="ar">العنوان</span></label><input class="form-control" id="e-adresse-fr" type="text" placeholder="Adresse résidentielle"></div>
+          <div class="form-group"><label class="form-label">Niveau d'instruction <span class="ar">المستوى الدراسي</span></label>
+            <select class="form-control" id="e-niveau">
+              <option value="1">Aucun / بدون</option><option value="2">Primaire / ابتدائي</option><option value="3">Moyen / متوسط</option><option value="4">Secondaire / ثانوي</option><option value="5">Universitaire / جامعي</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Formation agricole <span class="ar">التكوين الفلاحي</span></label>
+            <select class="form-control" id="e-formation">
+              <option value="1">Aucun / بدون</option><option value="2">Perfectionnement / تكوين تكميلي</option><option value="3">Agent technique / تقني</option><option value="4">Agent technique spécialisé / تقني متخصص</option><option value="5">Technicien / تقني سامي</option><option value="6">Technicien supérieur / تقني سامي متخصص</option><option value="7">Ingénieur / مهندس</option><option value="8">Vétérinaire / طبيب بيطري</option><option value="9">Formation PRCHAT</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Nature exploitant <span class="ar">صفة المستغل</span></label>
+            <select class="form-control" id="e-nature">
+              <option value="1">Propriétaire / مالك</option><option value="2">Locataire / مستأجر</option><option value="3">Métayer / خماس</option><option value="4">Autre / أخرى</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Issu famille agricole ? <span class="ar">من أسرة فلاحية؟</span></label><select class="form-control" id="e-famille"><option value="true">Oui / نعم</option><option value="false">Non / لا</option></select></div>
+          <div class="form-group"><label class="form-label">Nb co-exploitants <span class="ar">عدد المشاركين</span></label><input class="form-control" id="e-coexpl" type="number" value="0" min="0"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">🛡️ Assurance & Sécurité sociale <span class="ar">/ التأمين والضمان الاجتماعي</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Type d'assurance <span class="ar">نوع التأمين</span></label><select class="form-control" id="e-assurance"><option value="">-- Aucune / بدون --</option><option value="1">CASNOS / كسناس</option><option value="2">CNAS / كناس</option></select></div>
+          <div class="form-group"><label class="form-label">N° Sécurité sociale <span class="ar">رقم الضمان الاجتماعي</span></label><input class="form-control" id="e-secsoc" type="text" placeholder="Numéro de sécurité sociale"></div>
+          <div class="form-group"><label class="form-label">N° Carte fellah <span class="ar">رقم بطاقة الفلاح</span></label><input class="form-control" id="e-carte-fellah" type="text" placeholder="Numéro carte fellah"></div>
+          <div class="form-group"><label class="form-label">N° CAW <span class="ar">رقم الغرفة الفلاحية</span></label><input class="form-control" id="e-caw" type="text" placeholder="Numéro d'inscription CAW"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">🔗 Affiliations & Inscriptions <span class="ar">/ الانتماءات والتسجيلات</span></div>
+        <div class="checkbox-group" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">
+          <label class="checkbox-item"><input type="checkbox" id="e-chambre-agri"> Chambre d'agriculture (CAW) / غرفة الفلاحة</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-chambre-peche"> Chambre pêche/aquaculture (CAPA) / غرفة الصيد</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-union"> Union nat. paysans algériens (UNPA) / اتحاد الفلاحين</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-artisanat"> Chambre de l'artisanat (CAM) / غرفة الحرف</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-commerce"> Chambre de commerce (CCW) / غرفة التجارة</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-dispositif"> Dispositifs sociaux / الأجهزة الاجتماعية</label>
+          <label class="checkbox-item"><input type="checkbox" id="e-principal" checked> Exploitant principal / المستغل الرئيسي</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-footer-primary" onclick="saveExploitant()">Enregistrer</button>
+      <button class="btn btn-footer-cancel" onclick="closeModal('modal-exploitant')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EXPLOITATION avec Parcelles intégrées -->
+<div class="modal-overlay" id="modal-exploitation">
+  <div class="modal" style="width:900px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-expl2-title">Ajouter une exploitation agricole</div><div class="modal-title-ar">إضافة مستثمرة فلاحية</div></div>
+      <button class="modal-close" onclick="closeModal('modal-exploitation')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-section-title">🏷️ Identification <span class="ar">/ التعريف والتسمية</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Nom exploitation (FR) <span style="color:red">*</span></label><input class="form-control" id="ex-nom-fr" type="text" placeholder="Nom en français" required></div>
+          <div class="form-group"><label class="form-label">Nom exploitation (AR) <span class="ar">اسم المستثمرة</span></label><input class="form-control" id="ex-nom-ar" type="text" placeholder="اسم المستثمرة بالعربية" dir="rtl"></div>
+          <div class="form-group full">
+            <label class="form-label">Exploitant (Chef) <span class="ar">المستغل الرئيسي</span> <span style="color:red">*</span></label>
+            <div class="autocomplete-wrap">
+              <input class="form-control" id="ex-exploitant-input" type="text" placeholder="Tapez les 2 premières lettres du nom..." autocomplete="off" oninput="autocompleteExploitant(this.value)" onblur="delayCloseDropdown('ex-exploitant-drop')">
+              <input type="hidden" id="ex-exploitant-id">
+              <div class="autocomplete-dropdown" id="ex-exploitant-drop"></div>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Wilaya <span class="ar">الولاية</span> <span style="color:red">*</span></label><select class="form-control" id="ex-wilaya" onchange="loadCommunes(this.value)"><option value="">-- Sélectionner une wilaya --</option></select></div>
+          <div class="form-group"><label class="form-label">Commune <span class="ar">البلدية</span> <span style="color:red">*</span></label><select class="form-control" id="ex-commune"><option value="">-- Sélectionner d'abord la wilaya --</option></select></div>
+          <div class="form-group"><label class="form-label">District / Lieu-dit (FR) <span class="ar">الدوار / المكان</span></label><input class="form-control" id="ex-district-fr" type="text" placeholder="Lieu-dit, district, zone"></div>
+          <div class="form-group"><label class="form-label">District / Lieu-dit (AR)</label><input class="form-control" id="ex-district-ar" type="text" placeholder="اسم المكان أو الدوار" dir="rtl"></div>
+          <div class="form-group"><label class="form-label">N° d'immatriculation commune <span class="ar">رقم التسجيل في البلدية</span></label><input class="form-control" id="ex-num-immat" type="text" placeholder="Numéro d'enregistrement"></div>
+          <div class="form-group"><label class="form-label">Statut juridique <span class="ar">الوضع القانوني</span></label>
+            <select class="form-control" id="ex-statut">
+              <option value="1">Personne physique / شخص طبيعي</option><option value="2">Société civile / شركة مدنية</option><option value="3">Société familiale / شركة عائلية</option><option value="4">SARL / ش.ذ.م.م</option><option value="5">EURL / م.ذ.م.م</option><option value="6">Coopérative / تعاونية</option><option value="7">Groupement / تجمع</option><option value="8">Location / إيجار</option><option value="9">Association / جمعية</option><option value="10">Partenariat / شراكة</option><option value="11">Sans statut juridique / بدون صفة قانونية</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Vocation (activité) <span class="ar">النشاط الفلاحي</span></label>
+            <select class="form-control" id="ex-activite">
+              <option value="1">Production végétale / إنتاج نباتي</option><option value="2">Production animale / إنتاج حيواني</option><option value="3">Mixte (végétal + animal) / مختلط</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Parcelles / Blocks intégrée -->
+      <div class="form-section">
+        <div class="form-section-title">📐 Blocks / Parcelles <span class="ar">/ الكتل والقطع الفلاحية</span></div>
+        <div id="parcelles-container"></div>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px" onclick="ajouterParcelle()">+ Ajouter un block / parcelle</button>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">📍 Géolocalisation <span class="ar">/ الإحداثيات الجغرافية (WGS 1984)</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Latitude Y° <span class="ar">خط العرض</span></label><input class="form-control" id="ex-lat" type="number" step="0.0000001" placeholder="35.3712000"></div>
+          <div class="form-group"><label class="form-label">Longitude X° <span class="ar">خط الطول</span></label><input class="form-control" id="ex-lon" type="number" step="0.0000001" placeholder="1.3215000"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">📡 Connectivité & Accès <span class="ar">/ الاتصال والوصول</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Réseau électrique <span class="ar">الشبكة الكهربائية</span></label><select class="form-control" id="ex-elec"><option value="true">Oui / نعم</option><option value="false">Non / لا</option></select></div>
+          <div class="form-group"><label class="form-label">Réseau téléphonique <span class="ar">الشبكة الهاتفية</span></label><select class="form-control" id="ex-tel"><option value="true">Oui / نعم</option><option value="false">Non / لا</option></select></div>
+          <div class="form-group"><label class="form-label">Type téléphone <span class="ar">نوع الهاتف</span></label><select class="form-control" id="ex-tel-type"><option value="2">Mobile / هاتف نقال</option><option value="1">Fixe / هاتف ثابت</option></select></div>
+          <div class="form-group"><label class="form-label">Accès Internet <span class="ar">الأنترنت</span></label><select class="form-control" id="ex-internet"><option value="true">Oui / نعم</option><option value="false">Non / لا</option></select></div>
+          <div class="form-group"><label class="form-label">Internet à usage agricole <span class="ar">أنترنت للاستخدام الفلاحي</span></label><select class="form-control" id="ex-inet-agri"><option value="false">Non / لا</option><option value="true">Oui / نعم</option></select></div>
+          <div class="form-group"><label class="form-label">Accessibilité (voie d'accès) <span class="ar">إمكانية الوصول</span></label><select class="form-control" id="ex-access"><option value="1">Route nationale / طريق وطنية</option><option value="2">Chemin de wilaya / طريق ولائية</option><option value="3">Route communale / طريق بلدية</option><option value="4">Piste rurale / مسلك ريفي</option><option value="5">Piste agricole / مسلك فلاحي</option><option value="6">Autre / أخرى</option></select></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">🏠 Logement & Superficie bâtie <span class="ar">/ السكن والمساحة المبنية</span></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Occupants non exploitants <span class="ar">سكان غير مستغلين</span></label><select class="form-control" id="ex-occupant"><option value="false">Non / لا</option><option value="true">Oui / نعم</option></select></div>
+          <div class="form-group"><label class="form-label">Nb ménages <span class="ar">عدد الأسر</span></label><input class="form-control" id="ex-menages" type="number" value="1" min="0"></div>
+          <div class="form-group"><label class="form-label">Surface bâtie occupée (m²) <span class="ar">المساحة المبنية المشغولة</span></label><input class="form-control" id="ex-batie" type="number" step="0.01" value="0"></div>
+          <div class="form-group"><label class="form-label">Surface non bâtie (m²) <span class="ar">المساحة غير المبنية</span></label><input class="form-control" id="ex-non-batie" type="number" step="0.01" value="0"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">⚡ Sources d'énergie utilisées <span class="ar">/ مصادر الطاقة المستعملة</span></div>
+        <div class="checkbox-group" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label class="checkbox-item"><input type="checkbox" id="ex-en-elec" checked> Réseau électrique / الشبكة الكهربائية</label>
+          <label class="checkbox-item"><input type="checkbox" id="ex-en-groupe"> Groupe électrogène / مولد كهربائي</label>
+          <label class="checkbox-item"><input type="checkbox" id="ex-en-solaire"> Énergie solaire / الطاقة الشمسية</label>
+          <label class="checkbox-item"><input type="checkbox" id="ex-en-eolien"> Énergie éolienne / طاقة الرياح</label>
+          <label class="checkbox-item"><input type="checkbox" id="ex-en-autres"> Autres sources / مصادر أخرى</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-footer-primary" onclick="saveExploitation()">Enregistrer</button>
+      <button class="btn btn-footer-cancel" onclick="closeModal('modal-exploitation')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="width:660px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="detail-title">Détail</div><div class="modal-title-ar" id="detail-title-ar">التفاصيل</div></div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== WIZARD RECENSEMENT MODAL ===== -->
+<div class="wizard-overlay" id="wizard-recensement">
+  <div class="wizard-modal">
+    <div class="wizard-header">
+      <div class="wizard-header-top">
+        <div>
+          <div class="wizard-header-title">Wizard Recensement</div>
+          <div class="wizard-header-breadcrumb" id="wiz-breadcrumb">Recensement &gt; Recensements &gt; Nouveau dossier</div>
+        </div>
+        <button class="wizard-close" onclick="closeWizard()">✕</button>
+      </div>
+      <div class="wizard-progress-bar-wrap">
+        <div class="wizard-progress-track"><div class="wizard-progress-fill" id="wiz-progress-fill" style="width:10%"></div></div>
+        <div class="wizard-step-label" id="wiz-step-label">Etape 1 / 10</div>
+      </div>
+    </div>
+    <div class="wizard-steps-nav">
+      <button class="wstep-btn active" onclick="goWizStep(1)" id="wstep-1"><span class="wstep-icon">🖊</span> Identification exploitation</button>
+      <button class="wstep-btn" onclick="goWizStep(2)" id="wstep-2"><span class="wstep-icon">○</span> Superficie</button>
+      <button class="wstep-btn" onclick="goWizStep(3)" id="wstep-3"><span class="wstep-icon">○</span> Cultures</button>
+      <button class="wstep-btn" onclick="goWizStep(4)" id="wstep-4"><span class="wstep-icon">○</span> Elevage</button>
+      <button class="wstep-btn" onclick="goWizStep(5)" id="wstep-5"><span class="wstep-icon">○</span> Equipements</button>
+      <button class="wstep-btn" onclick="goWizStep(6)" id="wstep-6"><span class="wstep-icon">○</span> Eau</button>
+      <button class="wstep-btn" onclick="goWizStep(7)" id="wstep-7"><span class="wstep-icon">○</span> Financement</button>
+      <button class="wstep-btn" onclick="goWizStep(8)" id="wstep-8"><span class="wstep-icon">○</span> Assurances</button>
+      <button class="wstep-btn" onclick="goWizStep(9)" id="wstep-9"><span class="wstep-icon">○</span> Commercialisation et organisations</button>
+      <button class="wstep-btn" onclick="goWizStep(10)" id="wstep-10"><span class="wstep-icon">○</span> Validation</button>
+    </div>
+    <div class="wizard-body">
+
+      <!-- STEP 1 -->
+      <div class="wstep-page active" id="wstep-page-1">
+        <div class="wizard-section-title">Identification exploitation</div>
+        <div class="wizard-card">
+          <div class="wiz-form-group">
+            <label class="wiz-label">Campagne</label>
+            <input class="wiz-input" id="wiz-campagne" readonly>
+          </div>
+        </div>
+        <div class="wizard-card" style="margin-top:14px">
+          <div class="wiz-filter-row">
+            <div class="wiz-form-group">
+              <label class="wiz-label">Wilaya</label>
+              <select class="wiz-select" id="wiz-filter-wilaya" onchange="wizFilterWilaya()">
+                <option value="">Toutes les wilayas</option>
+              </select>
+            </div>
+            <div class="wiz-form-group">
+              <label class="wiz-label">Commune</label>
+              <select class="wiz-select" id="wiz-filter-commune">
+                <option value="">Toutes les communes</option>
+              </select>
+            </div>
+            <div class="wiz-form-group">
+              <label class="wiz-label">Nom exploitant</label>
+              <input class="wiz-input" id="wiz-filter-exploitant" placeholder="">
+            </div>
+          </div>
+          <div class="wiz-filter-row" style="margin-top:4px">
+            <div class="wiz-form-group">
+              <label class="wiz-label">Nom exploitation</label>
+              <input class="wiz-input" id="wiz-filter-nom-expl" placeholder="">
+            </div>
+            <div class="wiz-form-group">
+              <label class="wiz-label">ID exploitation</label>
+              <input class="wiz-input" id="wiz-filter-id-expl" placeholder="">
+            </div>
+            <div class="wiz-form-group" style="justify-content:flex-end">
+              <button class="btn btn-outline" onclick="wizApplyFilter()" style="margin-top:auto;border-radius:8px;padding:9px 20px;font-size:.84rem;font-weight:600">Filtrer</button>
+            </div>
+          </div>
+          <div class="wiz-form-group" style="margin-top:10px">
+            <label class="wiz-label">Exploitation non recensee <span class="req">*</span></label>
+            <select class="wiz-select wiz-exploitation-select" id="wiz-exploitation-select" style="width:100%">
+              <option value="">Selectionner une exploitation</option>
+            </select>
+          </div>
+          <div class="wiz-form-group" style="margin-top:14px">
+            <label class="wiz-label">Date recensement</label>
+            <input class="wiz-input" id="wiz-date-recensement" type="date" style="max-width:320px">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="wstep-page" id="wstep-page-2">
+        <div class="wizard-section-title">Superficie</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Superficie totale (ha) <span class="req">*</span></label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie agricole utile (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie irriguée (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie en jachère (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie boisée (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie non agricole (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="wstep-page" id="wstep-page-3">
+        <div class="wizard-section-title">Cultures</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Type de culture principal</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Céréales</option><option>Légumes</option><option>Fruits</option><option>Fourrage</option><option>Maraîchage</option><option>Viticulture</option><option>Arboriculture</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Superficie cultivée (ha)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Production estimée (qx)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Mode d'irrigation</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Pluvial</option><option>Gravitaire</option><option>Aspersion</option><option>Goutte à goutte</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="wstep-page" id="wstep-page-4">
+        <div class="wizard-section-title">Elevage</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid three">
+            <div class="wiz-form-group"><label class="wiz-label">Bovins</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Ovins</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Caprins</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Camelins</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Equins</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Volailles</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Abeilles (ruches)</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Cunicoles (lapins)</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="wstep-page" id="wstep-page-5">
+        <div class="wizard-section-title">Equipements</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Tracteurs</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Moissonneuses-batteuses</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Motopompes</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Charrues</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Silos / entrepôts</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Oui</option><option>Non</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Camion / véhicule agricole</label><input class="wiz-input" type="number" min="0" placeholder="0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="wstep-page" id="wstep-page-6">
+        <div class="wizard-section-title">Eau</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Source d'eau principale</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Puits</option><option>Forage</option><option>Réseau AEP</option><option>Barrage / Retenue</option><option>Oued / source naturelle</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Profondeur du forage (m)</label><input class="wiz-input" type="number" step="0.1" placeholder="0.0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Débit (l/s)</label><input class="wiz-input" type="number" step="0.1" placeholder="0.0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Système d'irrigation</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Gravitaire</option><option>Aspersion</option><option>Goutte à goutte</option><option>Submersion</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Accès eau potable</label><select class="wiz-select"><option>Oui</option><option>Non</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="wstep-page" id="wstep-page-7">
+        <div class="wizard-section-title">Financement</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Source de financement</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Fonds propres</option><option>Crédit bancaire</option><option>FNRDA</option><option>ANSEJ / ANADE</option><option>Autre</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Montant financé (DA)</label><input class="wiz-input" type="number" step="1000" placeholder="0"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Banque / Organisme</label><input class="wiz-input" placeholder="Nom banque ou organisme"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Taux d'intérêt (%)</label><input class="wiz-input" type="number" step="0.01" placeholder="0.00"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="wstep-page" id="wstep-page-8">
+        <div class="wizard-section-title">Assurances</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Type d'assurance agricole</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Grêle</option><option>Incendie récolte</option><option>Sécheresse</option><option>Multirisque</option><option>Aucune</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Compagnie d'assurance</label><input class="wiz-input" placeholder="Nom compagnie"></div>
+            <div class="wiz-form-group"><label class="wiz-label">N° Police d'assurance</label><input class="wiz-input" placeholder="Numéro police"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Date d'expiration</label><input class="wiz-input" type="date"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 9 -->
+      <div class="wstep-page" id="wstep-page-9">
+        <div class="wizard-section-title">Commercialisation et organisations</div>
+        <div class="wizard-card">
+          <div class="wiz-form-grid">
+            <div class="wiz-form-group"><label class="wiz-label">Mode de commercialisation</label><select class="wiz-select"><option value="">-- Sélectionner --</option><option>Vente directe</option><option>Marché de gros</option><option>Coopérative</option><option>Export</option><option>Autre</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Appartenance à une coopérative</label><select class="wiz-select"><option>Non</option><option>Oui</option></select></div>
+            <div class="wiz-form-group"><label class="wiz-label">Nom coopérative / organisation</label><input class="wiz-input" placeholder="Nom de la structure"></div>
+            <div class="wiz-form-group"><label class="wiz-label">Part vendue (%)</label><input class="wiz-input" type="number" min="0" max="100" placeholder="0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 10 -->
+      <div class="wstep-page" id="wstep-page-10">
+        <div class="wizard-section-title">Validation du dossier</div>
+        <div class="wizard-card" style="background:#f0faf1;border-color:#a7d7ac">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <span style="font-size:2rem">✅</span>
+            <div>
+              <div style="font-size:.95rem;font-weight:700;color:#1C4B2D">Dossier prêt à soumettre</div>
+              <div style="font-size:.8rem;color:#2E6B3E;margin-top:2px">Veuillez vérifier toutes les informations avant de soumettre.</div>
+            </div>
+          </div>
+          <div id="wiz-recap" style="font-size:.85rem;color:var(--text);line-height:2"></div>
+        </div>
+        <div class="wizard-card" style="margin-top:14px">
+          <div class="wiz-form-group">
+            <label class="wiz-label">Observations / Remarques</label>
+            <textarea class="wiz-textarea" rows="4" placeholder="Remarques éventuelles du recenseur..." style="width:100%;resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end wizard-body -->
+
+    <div class="wizard-footer">
+      <div class="wizard-footer-left">
+        <button class="btn-wiz-prev" id="wiz-btn-prev" onclick="wizPrev()" style="display:none">← Précédent</button>
+        <button class="btn-wiz-next" id="wiz-btn-next" onclick="wizNext()">Suivant</button>
+      </div>
+      <div class="wizard-footer-right">
+        <button class="btn-wiz-draft" onclick="wizSaveDraft()">Enregistrer brouillon</button>
+        <button class="btn-wiz-submit" id="wiz-btn-submit" onclick="wizSubmit()">Soumettre</button>
+        <button class="btn-wiz-quit" onclick="closeWizard()">Quitter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WILAYAS = [
+  {id:1,code:'01',fr:'Adrar',ar:'أدرار'},{id:2,code:'02',fr:'Chlef',ar:'الشلف'},{id:3,code:'03',fr:'Laghouat',ar:'الأغواط'},
+  {id:4,code:'04',fr:'Oum El Bouaghi',ar:'أم البواقي'},{id:5,code:'05',fr:'Batna',ar:'باتنة'},{id:6,code:'06',fr:'Béjaïa',ar:'بجاية'},
+  {id:7,code:'07',fr:'Biskra',ar:'بسكرة'},{id:8,code:'08',fr:'Béchar',ar:'بشار'},{id:9,code:'09',fr:'Blida',ar:'البليدة'},
+  {id:10,code:'10',fr:'Bouira',ar:'البويرة'},{id:11,code:'11',fr:'Tamanrasset',ar:'تمنراست'},{id:12,code:'12',fr:'Tébessa',ar:'تبسة'},
+  {id:13,code:'13',fr:'Tlemcen',ar:'تلمسان'},{id:14,code:'14',fr:'Tiaret',ar:'تيارت'},{id:15,code:'15',fr:'Tizi Ouzou',ar:'تيزي وزو'},
+  {id:16,code:'16',fr:'Alger',ar:'الجزائر'},{id:17,code:'17',fr:'Djelfa',ar:'الجلفة'},{id:18,code:'18',fr:'Jijel',ar:'جيجل'},
+  {id:19,code:'19',fr:'Sétif',ar:'سطيف'},{id:20,code:'20',fr:'Saïda',ar:'سعيدة'},{id:21,code:'21',fr:'Skikda',ar:'سكيكدة'},
+  {id:22,code:'22',fr:'Sidi Bel Abbès',ar:'سيدي بلعباس'},{id:23,code:'23',fr:'Annaba',ar:'عنابة'},{id:24,code:'24',fr:'Guelma',ar:'قالمة'},
+  {id:25,code:'25',fr:'Constantine',ar:'قسنطينة'},{id:26,code:'26',fr:'Médéa',ar:'المدية'},{id:27,code:'27',fr:'Mostaganem',ar:'مستغانم'},
+  {id:28,code:'28',fr:"M'Sila",ar:'المسيلة'},{id:29,code:'29',fr:'Mascara',ar:'معسكر'},{id:30,code:'30',fr:'Ouargla',ar:'ورقلة'},
+  {id:31,code:'31',fr:'Oran',ar:'وهران'},{id:32,code:'32',fr:'El Bayadh',ar:'البيض'},{id:33,code:'33',fr:'Illizi',ar:'إليزي'},
+  {id:34,code:'34',fr:'Bordj Bou Arréridj',ar:'برج بوعريريج'},{id:35,code:'35',fr:'Boumerdès',ar:'بومرداس'},{id:36,code:'36',fr:'El Tarf',ar:'الطارف'},
+  {id:37,code:'37',fr:'Tindouf',ar:'تندوف'},{id:38,code:'38',fr:'Tissemsilt',ar:'تيسمسيلت'},{id:39,code:'39',fr:'El Oued',ar:'الوادي'},
+  {id:40,code:'40',fr:'Khenchela',ar:'خنشلة'},{id:41,code:'41',fr:'Souk Ahras',ar:'سوق أهراس'},{id:42,code:'42',fr:'Tipaza',ar:'تيبازة'},
+  {id:43,code:'43',fr:'Mila',ar:'ميلة'},{id:44,code:'44',fr:"Aïn Defla",ar:'عين الدفلى'},{id:45,code:'45',fr:"Naâma",ar:'النعامة'},
+  {id:46,code:'46',fr:"Aïn Témouchent",ar:'عين تموشنت'},{id:47,code:'47',fr:"Ghardaïa",ar:'غرداية'},{id:48,code:'48',fr:'Relizane',ar:'غليزان'},
+  {id:49,code:'49',fr:"Timimoun",ar:'تيميمون'},{id:50,code:'50',fr:"Bordj Badji Mokhtar",ar:'برج باجي مختار'},{id:51,code:'51',fr:"Ouled Djellal",ar:'أولاد جلال'},
+  {id:52,code:'52',fr:"Béni Abbès",ar:'بني عباس'},{id:53,code:'53',fr:"In Salah",ar:'عين صالح'},{id:54,code:'54',fr:"In Guezzam",ar:'عين قزام'},
+  {id:55,code:'55',fr:"Touggourt",ar:'تقرت'},{id:56,code:'56',fr:"Djanet",ar:'جانت'},{id:57,code:'57',fr:"El M'Ghair",ar:"المغير"},{id:58,code:'58',fr:"El Meniaa",ar:'المنيعة'}
+];
+
+const COMMUNES_BY_WILAYA = {
+  1:[{fr:'Adrar',ar:'أدرار'},{fr:'Aoulef',ar:'أولف'},{fr:'Reggane',ar:'رقان'},{fr:'In Zghmir',ar:'إن زغمير'},{fr:'Tit',ar:'تيت'},{fr:'Ksar Kaddour',ar:'قصر قدور'},{fr:'Tsabit',ar:'تسابيت'},{fr:'Timimoun',ar:'تيميمون'},{fr:'Charouine',ar:'شروين'},{fr:'Fenoughil',ar:'فنوغيل'},{fr:'Tinerkouk',ar:'تينركوك'},{fr:'Deldoul',ar:'دلدول'},{fr:'Sali',ar:'سالي'},{fr:'Akabli',ar:'أقبلي'},{fr:'Metarfa',ar:'متارفة'},{fr:'Ouled Ahmed Timmi',ar:'أولاد أحمد تيمي'},{fr:'Bouda',ar:'بودة'},{fr:'Aougrout',ar:'أوقروت'},{fr:'Talmine',ar:'تالمين'},{fr:'Zaouiet Kounta',ar:'زاوية كنتة'},{fr:'Anefis',ar:'أنفيس'},{fr:'Bordj Badji Mokhtar',ar:'برج باجي مختار'},{fr:'Timokten',ar:'تيموكتن'},{fr:'Tamest',ar:'تامست'},{fr:'Tinerkouk',ar:'تينركوك'}],
+  2:[{fr:'Chlef',ar:'الشلف'},{fr:'Ténès',ar:'تنس'},{fr:'Boukadir',ar:'بوقدير'},{fr:'Beni Haoua',ar:'بني حواء'},{fr:'Sobha',ar:'صبحة'},{fr:'Harchoun',ar:'هارشون'},{fr:'Ouled Fares',ar:'أولاد فارس'},{fr:'Sidi Akkacha',ar:'سيدي عكاشة'},{fr:'Breira',ar:'بريرة'},{fr:'Chettia',ar:'الشطية'},{fr:'Sidi Abderrahmane',ar:'سيدي عبد الرحمن'},{fr:'Moussadek',ar:'مصدق'},{fr:'Beni Bouattab',ar:'بني بوعتاب'},{fr:'Ain Merane',ar:'عين مران'},{fr:'Oued Sly',ar:'وادي سلي'},{fr:'Abou El Hassan',ar:'أبو الحسن'},{fr:'El Karimia',ar:'الكريمية'},{fr:'Tadjena',ar:'تادجنة'},{fr:'Taougrit',ar:'تاوقريت'},{fr:'Ben Aïcha',ar:'بن عيشة'},{fr:'Bouzeghaia',ar:'بوزغاية'},{fr:'Ain Merane',ar:'عين مران'},{fr:'Zeboudja',ar:'الزبوجة'}],
+  3:[{fr:'Laghouat',ar:'الأغواط'},{fr:'Aflou',ar:'أفلو'},{fr:'El Ghicha',ar:'الغيشة'},{fr:'Hassi Rmel',ar:'حاسي الرمل'},{fr:'Ain Mahdi',ar:'عين ماضي'},{fr:'Tadjmout',ar:'تاجموت'},{fr:'Ksar El Hirane',ar:'قصر الحيران'},{fr:'Bennaceur',ar:'بن ناصر'},{fr:'Oued Morra',ar:'وادي مرة'},{fr:'Oued M\'zi',ar:'وادي مزي'},{fr:'Brida',ar:'بريدة'},{fr:'Gueltat Sidi Saad',ar:'قلتة سيدي سعد'},{fr:'Ain Sidi Ali',ar:'عين سيدي علي'},{fr:'Beidha',ar:'البيضاء'},{fr:'Sebgag',ar:'سبقاق'},{fr:'Taouiala',ar:'تاويالة'},{fr:'Tadjrouna',ar:'تاجرونة'},{fr:'Hassi Delaa',ar:'حاسي دلاعة'},{fr:'Hassi Rmel',ar:'حاسي الرمل'},{fr:'Ben Nacer Ben Chohra',ar:'بن ناصر بن شعرة'}],
+  4:[{fr:'Oum El Bouaghi',ar:'أم البواقي'},{fr:'Aïn Beïda',ar:'عين البيضاء'},{fr:'Aïn M\'lila',ar:'عين مليلة'},{fr:'El Amiria',ar:'الأميرية'},{fr:'Souk Naamane',ar:'سوق نعمان'},{fr:'Zorg',ar:'زرق'},{fr:'El Fedjoudj Boughrara Saoudi',ar:'فجوج بوغرارة سعودي'},{fr:'Behir Chergui',ar:'بحير الشرقي'},{fr:'Hanchir Toumghani',ar:'هنشير تومغني'},{fr:'El Harmilia',ar:'الحرملية'},{fr:'Ain Zitoun',ar:'عين الزيتون'},{fr:'Ouled Hamla',ar:'أولاد حملة'},{fr:'Ain Babouche',ar:'عين بابوش'},{fr:'Beriche Est',ar:'بريش الشرق'},{fr:'Dhalaa',ar:'ضلعة'},{fr:'F\'Kirina',ar:'فكيرينة'},{fr:'Ain Kercha',ar:'عين قشة'},{fr:'Bir Chouhada',ar:'بئر الشهداء'},{fr:'Ksar Sbahi',ar:'قصر صباحي'}],
+  5:[{fr:'Batna',ar:'باتنة'},{fr:'Aïn Touta',ar:'عين تاوتة'},{fr:'Barika',ar:'بريكة'},{fr:'Arris',ar:'أريس'},{fr:'N\'Gaous',ar:'نقاوس'},{fr:'Merouana',ar:'مروانة'},{fr:'Seriana',ar:'سيريانة'},{fr:'Menaa',ar:'مناعة'},{fr:'El Madher',ar:'المادر'},{fr:'Tazoult',ar:'تازولت'},{fr:'Ouled Aouf',ar:'أولاد عوف'},{fr:'Ghassira',ar:'غساسرة'},{fr:'Inoughissen',ar:'إينوغيسن'},{fr:'Ouyoun El Assafir',ar:'عيون العصافير'},{fr:'Djerma',ar:'جرمة'},{fr:'Teniet El Abed',ar:'تنيات العابد'},{fr:'Oued El Ma',ar:'وادي الماء'},{fr:'Boulhilat',ar:'بولحيلات'},{fr:'Lazrou',ar:'الأزرق'},{fr:'Boulhilat',ar:'بولحيلات'},{fr:'Ksar Bellezma',ar:'قصر بلزمة'},{fr:'Seggana',ar:'سقانة'},{fr:'Ichmoul',ar:'إيشمول'},{fr:'Foum Toub',ar:'فم الطوب'},{fr:'Beni Foudhala El Hakania',ar:'بني فضالة الحاكانية'},{fr:'Oued Taga',ar:'وادي تاقة'},{fr:'Chitane',ar:'شيطان'},{fr:'Ain Yagout',ar:'عين ياقوت'},{fr:'Fesdis',ar:'فسديس'},{fr:'Sefiane',ar:'سفيان'},{fr:'Rahbat',ar:'رحبات'},{fr:'Tilatou',ar:'تيلاطو'},{fr:'Ain Djasser',ar:'عين جاسر'},{fr:'Ouled Sellem',ar:'أولاد سالم'},{fr:'Bouzina',ar:'بوزينة'},{fr:'Chemora',ar:'شمورة'},{fr:'Ouled Ammar',ar:'أولاد عمار'},{fr:'El Hassi',ar:'الحاسي'},{fr:'Maafa',ar:'معافة'},{fr:'Gosbat',ar:'قصبة'},{fr:'Ouled Fadel',ar:'أولاد فاضل'},{fr:'Ras El Aioun',ar:'رأس العيون'},{fr:'Chir',ar:'شير'},{fr:'Hidoussa',ar:'حيدوسة'},{fr:'Guigba',ar:'قيقبة'},{fr:'Inoughissen',ar:'إينوغيسن'},{fr:'Lemsane',ar:'المسان'},{fr:'Beni Chaabane',ar:'بني شعبان'},{fr:'Tigherghar',ar:'تيغرغار'},{fr:'Bitam',ar:'بيتام'},{fr:'Ain Touta',ar:'عين تاوتة'}],
+  6:[{fr:'Béjaïa',ar:'بجاية'},{fr:'Kherrata',ar:'خراطة'},{fr:'Souk El Tenine',ar:'سوق الاثنين'},{fr:'Adekar',ar:'أدكار'},{fr:'Akbou',ar:'أقبو'},{fr:'Seddouk',ar:'سدوك'},{fr:'Tazmalt',ar:'تازمالت'},{fr:'Aïn Legradj',ar:'عين لقراج'},{fr:'Ouzellaguen',ar:'أوزلاقن'},{fr:'Aokas',ar:'أوقاس'},{fr:'Beni Maouche',ar:'بني معوش'},{fr:'Darguina',ar:'درقينة'},{fr:'Tichy',ar:'تيشي'},{fr:'Imsouhal',ar:'إمسوحال'},{fr:'Tinebdar',ar:'تينبدار'},{fr:'Ighil Ali',ar:'إيغيل علي'},{fr:'Feraoun',ar:'فرعون'},{fr:'Tibane',ar:'تيبان'},{fr:'Toudja',ar:'تودجة'},{fr:'El Kseur',ar:'القصر'},{fr:'Melbou',ar:'ملبو'},{fr:'Akfadou',ar:'أقفادو'},{fr:'Leflaye',ar:'لفلاي'},{fr:'Kansala',ar:'قنصلة'},{fr:'Amalou',ar:'أمالو'},{fr:'Ighram',ar:'إيغرام'},{fr:'Aït Smail',ar:'آيت إسماعيل'},{fr:'Boukhlifa',ar:'بوخليفة'},{fr:'Taourirt Ighil',ar:'تاوريرت إيغيل'},{fr:'Chemini',ar:'شميني'},{fr:'Souk Oufella',ar:'سوق أوفلا'},{fr:'Beni Djellil',ar:'بني جليل'},{fr:'Ifri Ouzellaguen',ar:'إفري أوزلاقن'},{fr:'Ait Rzine',ar:'آيت رزين'},{fr:'Chellata',ar:'شلاطة'},{fr:'Tamokra',ar:'تاموكرة'},{fr:'Timezrit',ar:'تيمزريت'},{fr:'Barbacha',ar:'بربشة'},{fr:'Beni Ksila',ar:'بني قسيلة'},{fr:'Kendira',ar:'قنديرة'},{fr:'Tifra',ar:'تيفرة'},{fr:'Ighil Ali',ar:'إيغيل علي'},{fr:'Tazmalt',ar:'تازمالت'},{fr:'Fenaia Ilmaten',ar:'فناية إلماتن'},{fr:'Tamridjet',ar:'تامريجت'},{fr:'Aït Smail',ar:'آيت إسماعيل'},{fr:'Beni Mellikeche',ar:'بني مليكش'},{fr:'Sidi Ayad',ar:'سيدي عياد'}],
+  7:[{fr:'Biskra',ar:'بسكرة'},{fr:'Ouled Djellal',ar:'أولاد جلال'},{fr:'Sidi Okba',ar:'سيدي عقبة'},{fr:'Tolga',ar:'طولقة'},{fr:'Bordj Ben Azzouz',ar:'برج بن عزوز'},{fr:'M\'Chounèche',ar:'مشونش'},{fr:'Foughala',ar:'فوغالة'},{fr:'Chetma',ar:'شتمة'},{fr:'Aïn Naga',ar:'عين ناقة'},{fr:'Zribet El Oued',ar:'زريبة الوادي'},{fr:'Besbes',ar:'بسباس'},{fr:'Branis',ar:'براني'},{fr:'El Hadjeb',ar:'الحاجب'},{fr:'Lichana',ar:'لشانة'},{fr:'Ourlal',ar:'أورلال'},{fr:'Meziraa',ar:'مزيرعة'},{fr:'Ech Chaïba',ar:'الشعيبة'},{fr:'Doucen',ar:'ذوسن'},{fr:'El Feidh',ar:'الفيض'},{fr:'Bouchagroun',ar:'بوشقرون'},{fr:'M\'Ziraa',ar:'مزيرعة'},{fr:'Sidi Khaled',ar:'سيدي خالد'},{fr:'Djemorah',ar:'جمورة'},{fr:'Lehouche',ar:'الهوش'},{fr:'Ain Zaatout',ar:'عين زعطوط'},{fr:'Ain Skhouna',ar:'عين السخونة'},{fr:'El Ghrous',ar:'الغروس'},{fr:'El Kantra',ar:'القنطرة'},{fr:'Lioua',ar:'ليوة'}],
+  8:[{fr:'Béchar',ar:'بشار'},{fr:'Kenadsa',ar:'قنادسة'},{fr:'Igli',ar:'إيقلي'},{fr:'Erg Ferradj',ar:'عرق فراج'},{fr:'Lahmar',ar:'الحمر'},{fr:'Beni Ounif',ar:'بني ونيف'},{fr:'Boukais',ar:'بوقايس'},{fr:'Ouled Khoudir',ar:'أولاد خضير'},{fr:'Kerzaz',ar:'قرزاز'},{fr:'Mérouane',ar:'مروانة'},{fr:'Mogheul',ar:'مغل'},{fr:'Timoudi',ar:'تيمودي'},{fr:'Ouled Khoudir',ar:'أولاد خضير'},{fr:'Tabelbala',ar:'تبلبالة'},{fr:'Taghit',ar:'تاغيت'},{fr:'Oulad Slimane',ar:'أولاد سليمان'},{fr:'Meridja',ar:'مريجة'},{fr:'Abadla',ar:'أبادلة'},{fr:'El Ouata',ar:'الوطى'}],
+  9:[{fr:'Blida',ar:'البليدة'},{fr:'Chréa',ar:'الشريعة'},{fr:'Mouzaïa',ar:'موزاية'},{fr:'Soumaa',ar:'السومعة'},{fr:'Meftah',ar:'المفتاح'},{fr:'Ouled Yaich',ar:'أولاد يايش'},{fr:'Chiffa',ar:'الشفة'},{fr:'Hammam Melouane',ar:'حمام ملوان'},{fr:'Ben Khellil',ar:'بن خليل'},{fr:'Oued El Alleug',ar:'وادي العلايق'},{fr:'Beni Tamou',ar:'بني تامو'},{fr:'Larbaa',ar:'الأربعاء'},{fr:'Boufarik',ar:'بوفاريك'},{fr:'El Affroun',ar:'العفرون'},{fr:'Bouinan',ar:'بوينان'},{fr:'Oued Djer',ar:'وادي جر'},{fr:'Bougara',ar:'بوقرة'},{fr:'Guerrouaou',ar:'قروواو'},{fr:'Aïn Romana',ar:'عين رومانة'},{fr:'Djebabra',ar:'جبابرة'},{fr:'Boufarik',ar:'بوفاريك'},{fr:'Choucha',ar:'الشوشة'}],
+  10:[{fr:'Bouira',ar:'البويرة'},{fr:'Lakhdaria',ar:'الأخضرية'},{fr:'M\'Chedallah',ar:'مشدالة'},{fr:'Sour El Ghouzlane',ar:'سور الغزلان'},{fr:'Ain Bessam',ar:'عين بسام'},{fr:'El Asnam',ar:'الأصنام'},{fr:'Bordj Okhriss',ar:'برج أخريص'},{fr:'Djebahia',ar:'جباهية'},{fr:'Aïn El Hadjar',ar:'عين الحجر'},{fr:'Haizer',ar:'حيزر'},{fr:'Bouderbala',ar:'بودربالة'},{fr:'Taghzout',ar:'تاغزوت'},{fr:'Chorfa',ar:'الشرفة'},{fr:'El Hachimia',ar:'الهاشمية'},{fr:'Raouraoua',ar:'رواوة'},{fr:'Kadiria',ar:'قادرية'},{fr:'Zbarbar',ar:'زبربر'},{fr:'Bechloul',ar:'بشلول'},{fr:'Bir Ghbalou',ar:'بئر غبالو'},{fr:'Aghbalou',ar:'أغبالو'},{fr:'Ridane',ar:'ريدان'},{fr:'Dechmia',ar:'دشمية'},{fr:'Ain El Turck',ar:'عين الترك'},{fr:'Oued El Berdi',ar:'وادي البردي'},{fr:'Beni Zeki',ar:'بني زكي'},{fr:'Souk El Khemis',ar:'سوق الخميس'},{fr:'Ahl El Ksar',ar:'أهل القصر'},{fr:'Aomar',ar:'عمر'},{fr:'Dirah',ar:'ديرة'},{fr:'Guerrouma',ar:'قروما'},{fr:'Maâla',ar:'المعلى'},{fr:'Mezdour',ar:'مزدور'}],
+  11:[{fr:'Tamanrasset',ar:'تمنراست'},{fr:'Abalessa',ar:'أبالسة'},{fr:'In Guezzam',ar:'إن قزام'},{fr:'Idles',ar:'إيدلس'},{fr:'Tin Zaouatine',ar:'تين زواطين'},{fr:'In Salah',ar:'عين صالح'},{fr:'Tazrouk',ar:'تازروق'},{fr:'Foggaret Ez Zoua',ar:'فقارة الزوى'}],
+  12:[{fr:'Tébessa',ar:'تبسة'},{fr:'Bir El Ater',ar:'بئر العاتر'},{fr:'Cheria',ar:'الشريعة'},{fr:'Ain Zerga',ar:'عين الزرقاء'},{fr:'El Ogla',ar:'العقلة'},{fr:'Morsott',ar:'مرسط'},{fr:'El Aouinet',ar:'العوينات'},{fr:'Negrine',ar:'نقرين'},{fr:'El Meridj',ar:'المريج'},{fr:'Boulhaf Dyr',ar:'بولحاف الدير'},{fr:'Bekkaria',ar:'بكارية'},{fr:'Ouenza',ar:'الونزة'},{fr:'El Houidjbet',ar:'الهويجبات'},{fr:'El Ogla El Malha',ar:'العقلة الملحة'},{fr:'Hammamet',ar:'الحمامات'},{fr:'Oum Ali',ar:'أم علي'},{fr:'Thlidjene',ar:'ثليجان'},{fr:'Ain Kerma',ar:'عين قرمة'},{fr:'Bir Dheheb',ar:'بئر الذهب'}],
+  13:[{fr:'Tlemcen',ar:'تلمسان'},{fr:'Beni Snous',ar:'بني سنوس'},{fr:'Beni Mester',ar:'بني مستر'},{fr:'Aïn Tallout',ar:'عين تالوت'},{fr:'Remchi',ar:'الرمشي'},{fr:'El Fehoul',ar:'الفحول'},{fr:'Sebdou',ar:'سبدو'},{fr:'Beni Ouarsous',ar:'بني ورسوس'},{fr:'Sidi Abdelli',ar:'سيدي عبد الله'},{fr:'Ain Nehala',ar:'عين نحالة'},{fr:'Ghazaouet',ar:'الغزوات'},{fr:'Souahlia',ar:'سواحلية'},{fr:'Msirda Fouaga',ar:'مسردة فواقة'},{fr:'Aïn Fezza',ar:'عين فضة'},{fr:'Ouled Mimoun',ar:'أولاد ميمون'},{fr:'Amieur',ar:'أميور'},{fr:'Ain Youcef',ar:'عين يوسف'},{fr:'Sidi Djillali',ar:'سيدي جيلالي'},{fr:'Zenata',ar:'زناتة'},{fr:'Tianet',ar:'تيانت'},{fr:'Bouihi',ar:'بويحي'},{fr:'Hennaya',ar:'الحناية'},{fr:'Maghnia',ar:'مغنية'},{fr:'Hammam Boughrara',ar:'حمام بوغرارة'},{fr:'Souahlia',ar:'سواحلية'},{fr:'Sidi Medjahed',ar:'سيدي مجاهد'},{fr:'Beni Khellad',ar:'بني خلاد'},{fr:'Ain Kebira',ar:'عين كبيرة'},{fr:'Chetouane',ar:'شتوان'},{fr:'Mansourah',ar:'المنصورة'},{fr:'Bab El Assa',ar:'باب الأسا'},{fr:'El Aricha',ar:'العريشة'},{fr:'Ain Ghoraba',ar:'عين الغرابة'},{fr:'Sidi Boumediene',ar:'سيدي بومدين'},{fr:'Fellaoucene',ar:'فلاوسن'},{fr:'Azaïls',ar:'أزايل'},{fr:'Sidi Slimane',ar:'سيدي سليمان'},{fr:'Bensekrane',ar:'بن سكران'},{fr:'Ain Tallout',ar:'عين تالوت'},{fr:'Sabra',ar:'صابرة'},{fr:'Ghazaouet',ar:'الغزوات'},{fr:'Dar Yaghmouracene',ar:'دار يغموراسن'},{fr:'Terni Beni Hdiel',ar:'تيرني بني هديل'},{fr:'Souahlia',ar:'سواحلية'},{fr:'Oued Chouly',ar:'وادي شولي'},{fr:'Ain Nehala',ar:'عين نحالة'},{fr:'Marsa Ben M\'hidi',ar:'مرسى بن مهيدي'}],
+  14:[{fr:'Tiaret',ar:'تيارت'},{fr:'Frenda',ar:'فرندة'},{fr:'Sougueur',ar:'سوقر'},{fr:'Mehdia',ar:'مهدية'},{fr:'Ain Dheb',ar:'عين الذهب'},{fr:'Ksar Chellala',ar:'قصر الشلالة'},{fr:'Ain El Hadid',ar:'عين الحديد'},{fr:'Oued Lilli',ar:'وادي ليلي'},{fr:'Mahia',ar:'ماهية'},{fr:'Rahouia',ar:'الرحوية'},{fr:'Zmalet El Emir Aek',ar:'زمالة الأمير عبد القادر'},{fr:'Sidi Bakhti',ar:'سيدي بختي'},{fr:'Guertoufa',ar:'قرطوفة'},{fr:'Sidi Ali Mellal',ar:'سيدي علي ملال'},{fr:'Naima',ar:'نعيمة'},{fr:'Sebaïne El Moufti',ar:'السبعين المفتي'},{fr:'Medroussa',ar:'مدروسة'},{fr:'Aïn El Hdid',ar:'عين الحديد'},{fr:'Hamadia',ar:'الحمادية'},{fr:'Sid Hosni',ar:'سيدي حسني'},{fr:'Rechaiga',ar:'الرشايقة'},{fr:'Nahr Ouassel',ar:'نهر واسل'},{fr:'Tagdemt',ar:'تاقدمت'},{fr:'Dahmouni',ar:'الدحموني'},{fr:'Aïn Bouchekif',ar:'عين بوشقيف'},{fr:'Sidi Abderrahmane',ar:'سيدي عبد الرحمن'},{fr:'Meghila',ar:'مغيلة'},{fr:'Aïn Kermes',ar:'عين كرمس'},{fr:'Bouchakour',ar:'بوشقور'},{fr:'Takhemaret',ar:'تاخمارت'},{fr:'Aïn Zarit',ar:'عين الذريعة'},{fr:'Tousnina',ar:'تاوسنينة'},{fr:'Oued Lilli',ar:'وادي ليلي'},{fr:'Mellakou',ar:'ملاكو'},{fr:'Djebilet Rosfa',ar:'جبيلات روسفة'}],
+  15:[{fr:'Tizi Ouzou',ar:'تيزي وزو'},{fr:'Ain El Hammam',ar:'عين الحمام'},{fr:'Makouda',ar:'مكودة'},{fr:'Draa El Mizan',ar:'ذراع الميزان'},{fr:'Tizi Gheniff',ar:'تيزي نثلاث'},{fr:'Boghni',ar:'بوغني'},{fr:'Iferhounene',ar:'إيفرحونن'},{fr:'Ouadhia',ar:'وادي عيسى'},{fr:'Ain Zaouia',ar:'عين الزاوية'},{fr:'Mechtras',ar:'مشطراس'},{fr:'Azazga',ar:'عزازقة'},{fr:'Iloula Oumalou',ar:'إيلولا أومالو'},{fr:'Timizart',ar:'تيمزارت'},{fr:'Ouaguenoun',ar:'واقنون'},{fr:'Aïn Defla',ar:'عين الدفلى'},{fr:'Mekla',ar:'مقلع'},{fr:'Tizi Rached',ar:'تيزي راشد'},{fr:'Beni Zmenzer',ar:'بني زمنزر'},{fr:'Iboudraren',ar:'إيبودرارن'},{fr:'Frikat',ar:'فريكات'},{fr:'Ath Yahia Moussa',ar:'آث يحيى موسى'},{fr:'Draa Ben Khedda',ar:'ذراع بن خدة'},{fr:'Souk El Thenine',ar:'سوق الاثنين'},{fr:'Souamaa',ar:'الصوامع'},{fr:'Boudjima',ar:'بوجيمة'},{fr:'Imsouhal',ar:'إمسوحال'},{fr:'Larbaâ Nath Irathen',ar:'أربعاء ناث إيراثن'},{fr:'Tizi Ouzou',ar:'تيزي وزو'},{fr:'Beni Aissi',ar:'بني عيسى'},{fr:'Beni Douala',ar:'بني دوالة'},{fr:'Aïn El Hammam',ar:'عين الحمام'},{fr:'Ait Mahmoud',ar:'آيت محمود'},{fr:'Tizi Ntleta',ar:'تيزي انتلاتا'},{fr:'Illiltene',ar:'إيليلتن'},{fr:'Yatafen',ar:'ياتافن'},{fr:'Ath Zikki',ar:'آث زيكي'},{fr:'Beni Zikki',ar:'بني زيكي'}],
+  16:[{fr:'Alger Centre',ar:'الجزائر الوسطى'},{fr:'Sidi M\'hamed',ar:'سيدي محمد'},{fr:'El Madania',ar:'المدنية'},{fr:'Belouizdad',ar:'بلوزداد'},{fr:'Bab El Oued',ar:'باب الواد'},{fr:'Bologhine Ibn Ziri',ar:'بولوغين ابن زيري'},{fr:'Casbah',ar:'القصبة'},{fr:'Oued Koriche',ar:'وادي قريش'},{fr:'Birmandreis',ar:'بئر مراد رايس'},{fr:'El Biar',ar:'الأبيار'},{fr:'Bouzareah',ar:'بوزريعة'},{fr:'Birkhadem',ar:'بئر خادم'},{fr:'El Harrach',ar:'الحراش'},{fr:'Baraki',ar:'براقي'},{fr:'Oued Smar',ar:'وادي سمار'},{fr:'Bachdjerrah',ar:'باش جراح'},{fr:'Hussein Dey',ar:'حسين داي'},{fr:'Kouba',ar:'القبة'},{fr:'Mohammadia',ar:'المحمدية'},{fr:'Bordj El Bahri',ar:'برج البحري'},{fr:'El Marsa',ar:'المرسى'},{fr:'Dar El Beida',ar:'الدار البيضاء'},{fr:'Bab Ezzouar',ar:'باب الزوار'},{fr:'Ben Aknoun',ar:'بن عكنون'},{fr:'Dely Ibrahim',ar:'الدالي إبراهيم'},{fr:'Hammamet',ar:'الحمامات'},{fr:'Raïs Hamidou',ar:'رأس حميدو'},{fr:'Djasr El Asfour',ar:'جسر قسنطينة'},{fr:'Cheraga',ar:'شراقة'},{fr:'Ouled Fayet',ar:'أولاد فايت'},{fr:'El Achour',ar:'العاشور'},{fr:'Draria',ar:'درارية'},{fr:'El Hammamet',ar:'الحمامات'},{fr:'Douera',ar:'الدويرة'},{fr:'Mahelma',ar:'المحالمة'},{fr:'Rahmania',ar:'الرحمانية'},{fr:'Saoula',ar:'ساولة'},{fr:'Eucalyptus',ar:'الكاليتوس'},{fr:'Birtouta',ar:'بئر توتة'},{fr:'Tessala El Merdja',ar:'تسالة المرجة'},{fr:'Ouled Chebel',ar:'أولاد شبل'},{fr:'Sidi Moussa',ar:'سيدي موسى'},{fr:'Aïn Taya',ar:'عين طاية'},{fr:'Bordj El Kiffan',ar:'برج الكيفان'},{fr:'El Magharia',ar:'المغارية'},{fr:'Beni Messous',ar:'بني مسوس'},{fr:'Les Eucalyptus',ar:'الأوكاليبتوس'},{fr:'Reghaia',ar:'الرغاية'},{fr:'Heraoua',ar:'هراوة'},{fr:'El Marsa',ar:'المرسى'},{fr:'Ain Benian',ar:'عين بنيان'},{fr:'Staoueli',ar:'سطاوالي'},{fr:'Zeralda',ar:'الزرالدة'},{fr:'Mahelma',ar:'المحالمة'},{fr:'Rahmania',ar:'الرحمانية'}],
+  17:[{fr:'Djelfa',ar:'الجلفة'},{fr:'Moudjbara',ar:'مجبارة'},{fr:'El Idrissia',ar:'الإدريسية'},{fr:'Birine',ar:'بيرين'},{fr:'Ain Maabed',ar:'عين معبد'},{fr:'El Khemis',ar:'الخميس'},{fr:'Selmana',ar:'سلمانة'},{fr:'Ain Chouhada',ar:'عين الشهداء'},{fr:'Oum Laadham',ar:'أم العظام'},{fr:'Had Sahary',ar:'حد الصحاري'},{fr:'Guernini',ar:'قرنيني'},{fr:'Sidi Baizid',ar:'سيدي بيزيد'},{fr:'Mliliha',ar:'مليليحة'},{fr:'El Idrissia',ar:'الإدريسية'},{fr:'Douis',ar:'الدويس'},{fr:'Hassi Bahbah',ar:'حاسي بحبح'},{fr:'Ain El Bell',ar:'عين البل'},{fr:'Guettara',ar:'قطارة'},{fr:'Sed Rahal',ar:'سد الرحال'},{fr:'Charef',ar:'الشارف'},{fr:'Dar Chioukh',ar:'دار الشيوخ'},{fr:'Deldoul',ar:'دلدول'},{fr:'Ain Oussera',ar:'عين وسارة'},{fr:'Bouira Lahdab',ar:'البويرة اللحداب'},{fr:'Zaccar',ar:'الزكار'},{fr:'El Azizia',ar:'العزيزية'},{fr:'El Feidh',ar:'الفيض'},{fr:'Hassi El Euch',ar:'حاسي الأوش'},{fr:'Messaad',ar:'مسعد'},{fr:'Benhar',ar:'بنهار'},{fr:'Magra',ar:'المقرة'},{fr:'Ain Fekka',ar:'عين فكة'},{fr:'Tamsa',ar:'تمسة'},{fr:'Tlitet',ar:'تلتة'},{fr:'Ain Serrag',ar:'عين سراج'}],
+  18:[{fr:'Jijel',ar:'جيجل'},{fr:'El Milia',ar:'الميلية'},{fr:'Taher',ar:'الطاهير'},{fr:'Chekfa',ar:'الشقفة'},{fr:'Chahna',ar:'شحنة'},{fr:'El Aouana',ar:'العوانة'},{fr:'Ziama Mansouriah',ar:'زيامة منصورية'},{fr:'Texenna',ar:'تكسنة'},{fr:'Djimla',ar:'جيملة'},{fr:'Selma Benziada',ar:'سلمى بن زيادة'},{fr:'Sidi Maarouf',ar:'سيدي معروف'},{fr:'El Kennar Nouchfi',ar:'القنار نوشفي'},{fr:'Ouled Yahia Khedrouche',ar:'أولاد يحيى خضروش'},{fr:'Bouchegouf',ar:'بوشقوف'},{fr:'El Ancer',ar:'العنصر'},{fr:'Sidi Abdelaziz',ar:'سيدي عبد العزيز'},{fr:'Kaous',ar:'قاوس'},{fr:'Ghebala',ar:'غبالة'},{fr:'Bouraoui Belhadef',ar:'البراوي بلحدف'},{fr:'Emir Abdelkader',ar:'الأمير عبد القادر'},{fr:'Bordj T\'Har',ar:'برج الطهر'},{fr:'Settara',ar:'سطارة'}],
+  19:[{fr:'Sétif',ar:'سطيف'},{fr:'El Eulma',ar:'العلمة'},{fr:'El Aïn',ar:'العين'},{fr:'Ain Arnat',ar:'عين أرنات'},{fr:'Ain Azzal',ar:'عين الأزل'},{fr:'Beni Aziz',ar:'بني عزيز'},{fr:'Boutaleb',ar:'بوطالب'},{fr:'Maoklane',ar:'مكلان'},{fr:'Tizi N\'Bechar',ar:'تيزي بشار'},{fr:'El Ouricia',ar:'العوريسية'},{fr:'Dehamcha',ar:'دحامشة'},{fr:'Bousselam',ar:'بوسلام'},{fr:'Guenzet',ar:'قنزات'},{fr:'Ain Legraj',ar:'عين لقراج'},{fr:'Ouled Si Ahmed',ar:'أولاد سي أحمد'},{fr:'Salah Bey',ar:'صالح باي'},{fr:'Guidjel',ar:'قيجل'},{fr:'Aïn Trig',ar:'عين الطريق'},{fr:'El Ouldja',ar:'العولجة'},{fr:'Beni Ourtilane',ar:'بني ورتيلان'},{fr:'Hammam Guergour',ar:'حمام قرقور'},{fr:'Ain Azel',ar:'عين الأزل'},{fr:'Ain El Kebira',ar:'عين الكبيرة'},{fr:'Bir Haddada',ar:'بئر حدادة'},{fr:'Babor',ar:'بابور'},{fr:'Beni Chebana',ar:'بني شبانة'},{fr:'Mezeloug',ar:'مزلوق'},{fr:'Bir El Arch',ar:'بئر الأرش'},{fr:'Bir Haddada',ar:'بئر حدادة'},{fr:'Tella',ar:'تلة'},{fr:'Ouled Addouane',ar:'أولاد عدوان'},{fr:'Serdj El Ghoul',ar:'سرج الغول'},{fr:'Ain Roua',ar:'عين رواح'},{fr:'Draa Kebila',ar:'ذراع القيلة'},{fr:'Bougaa',ar:'بوقاعة'},{fr:'Ras El Oued',ar:'رأس الوادي'},{fr:'El Eulma',ar:'العلمة'},{fr:'Hamma',ar:'الهامة'},{fr:'Tizi N Bechar',ar:'تيزي بشار'},{fr:'Mezloug',ar:'مزلوق'}],
+  20:[{fr:'Saïda',ar:'سعيدة'},{fr:'Ain El Hadjar',ar:'عين الحجر'},{fr:'Ouled Brahim',ar:'أولاد إبراهيم'},{fr:'Sidi Boubekeur',ar:'سيدي بوبكر'},{fr:'El Hassasna',ar:'الحسنة'},{fr:'Youb',ar:'يوب'},{fr:'Tircine',ar:'تيرسين'},{fr:'Doui Thabet',ar:'ذوي ثابت'},{fr:'El Bradia',ar:'البرادية'},{fr:'Maamora',ar:'مامورة'},{fr:'Ain Sekhouna',ar:'عين السخونة'},{fr:'Hounet',ar:'الحنوت'},{fr:'Sidi Ahmed',ar:'سيدي أحمد'}],
+  21:[{fr:'Skikda',ar:'سكيكدة'},{fr:'Ben Azzouz',ar:'بن عزوز'},{fr:'El Hadaiek',ar:'الحدائق'},{fr:'Bekkouche Lakhdar',ar:'بكوش المختار'},{fr:'Hamadi Krouma',ar:'حمادي كروما'},{fr:'Aïn Zouit',ar:'عين الزيت'},{fr:'El Marsa',ar:'المرسى'},{fr:'Zighoud Youcef',ar:'زيغود يوسف'},{fr:'Cheraia',ar:'الشرايع'},{fr:'Oum Toub',ar:'أم الطوب'},{fr:'Bin El Ouidan',ar:'بين الويدان'},{fr:'Sidi Mezghiche',ar:'سيدي مزغيش'},{fr:'El Ghedir',ar:'الغدير'},{fr:'Collo',ar:'قالو'},{fr:'Ouled Attia',ar:'أولاد عطية'},{fr:'Beni Bechir',ar:'بني بشير'},{fr:'Aïn Bouziane',ar:'عين بوزيان'},{fr:'Ramdane Djamel',ar:'رمضان جمال'},{fr:'Emdjez Edchich',ar:'أمجز إيدشيش'},{fr:'Oued El Aoul',ar:'وادي الأهول'},{fr:'Azzaba',ar:'عزابة'},{fr:'Tamalous',ar:'تمالوس'},{fr:'Kerkera',ar:'القرقرة'},{fr:'Beni Oulbane',ar:'بني ولبان'},{fr:'Ouled Attia',ar:'أولاد عطية'},{fr:'Oued Zhour',ar:'وادي الزهور'},{fr:'Filfila',ar:'فلفلة'},{fr:'Salah Bouchaour',ar:'صالح بوشعور'}],
+  22:[{fr:'Sidi Bel Abbès',ar:'سيدي بلعباس'},{fr:'Ras El Ma',ar:'رأس الماء'},{fr:'Tessala',ar:'تسالة'},{fr:'Moulay Slissen',ar:'مولاي سليسن'},{fr:'Ain Tindamine',ar:'عين تيندامين'},{fr:'Hassi Zahana',ar:'حاسي زهانة'},{fr:'Badredine El Mokrani',ar:'بدر الدين المقراني'},{fr:'Sidi Brahim',ar:'سيدي إبراهيم'},{fr:'Merine',ar:'مرين'},{fr:'Aïn El Berd',ar:'عين البرد'},{fr:'Sidi Khaled',ar:'سيدي خالد'},{fr:'Telagh',ar:'تلاغ'},{fr:'Guettarba',ar:'قطارب'},{fr:'Sidi Ali Benyoub',ar:'سيدي علي بن يوب'},{fr:'Ain Kada',ar:'عين قادة'},{fr:'Tilmouni',ar:'تيلموني'},{fr:'Bedrabine El Mokrani',ar:'بدر الدين المقراني'},{fr:'Ben Badis',ar:'ابن بادي'},{fr:'Zerouala',ar:'زروالة'},{fr:'Oued Taourira',ar:'وادي تاوريرة'},{fr:'Tabia',ar:'طابية'},{fr:'Tenira',ar:'تنيرة'},{fr:'Sidi Lahcene',ar:'سيدي لحسن'},{fr:'Mostefa Benbrahim',ar:'مصطفى بن إبراهيم'},{fr:'Marhoum',ar:'مرحوم'},{fr:'Ain Tindamine',ar:'عين تيندامين'}],
+  23:[{fr:'Annaba',ar:'عنابة'},{fr:'Berrahal',ar:'برحال'},{fr:'El Hadjar',ar:'الحجار'},{fr:'El Bouni',ar:'البوني'},{fr:'Eulma',ar:'العلمة'},{fr:'Aïn El Berda',ar:'عين البرداء'},{fr:'Chetaïbi',ar:'الشطايبي'},{fr:'Seraïdi',ar:'السرايدي'},{fr:'Treat',ar:'الطريعات'}],
+  24:[{fr:'Guelma',ar:'قالمة'},{fr:'Bouchegouf',ar:'بوشقوف'},{fr:'Héliopolis',ar:'هليوبوليس'},{fr:'Ain Ben Beida',ar:'عين بن بيضاء'},{fr:'Belkheir',ar:'بلخير'},{fr:'Bouati Mahmoud',ar:'بوعاطي محمود'},{fr:'Oued Zenati',ar:'وادي زناتي'},{fr:'Ben Djarah',ar:'بن جراح'},{fr:'Aïn Larbi',ar:'عين العربي'},{fr:'El Fedjoudj',ar:'الفجوج'},{fr:'Tamlouka',ar:'تاملوكة'},{fr:'Ras El Agba',ar:'رأس العقبة'},{fr:'Bouhachana',ar:'بوحشانة'},{fr:'Roknia',ar:'رقنية'},{fr:'Ain Makhlouf',ar:'عين مخلوف'},{fr:'Oued Fragha',ar:'وادي الفراقة'},{fr:'Ouled Hamla',ar:'أولاد حملة'},{fr:'Khezara',ar:'خزارة'},{fr:'Ain Sandel',ar:'عين صندل'},{fr:'Sellaoua Announa',ar:'صلاوة عنونة'},{fr:'Guelaat Bou Sbaa',ar:'قلعة بو سباع'},{fr:'El Djebahia',ar:'الجبهاء'},{fr:'El Hammam',ar:'الحمام'},{fr:'Ghoufi',ar:'الغوفي'}],
+  25:[{fr:'Constantine',ar:'قسنطينة'},{fr:'El Khroub',ar:'الخروب'},{fr:'Aïn Abid',ar:'عين عبيد'},{fr:'Didouche Mourad',ar:'ديدوش مراد'},{fr:'Hamma Bouziane',ar:'حامة بوزيان'},{fr:'Zighoud Youcef',ar:'زيغود يوسف'},{fr:'Ibn Badis',ar:'ابن باديس'},{fr:'Ibn Ziad',ar:'ابن زياد'},{fr:'Beni Hamidane',ar:'بني حميدان'},{fr:'Ouled Rahmoun',ar:'أولاد رحمون'},{fr:'Messaoud Boudjriou',ar:'مسعود بوجريو'}],
+  26:[{fr:'Médéa',ar:'المدية'},{fr:'Berrouaghia',ar:'البرواقية'},{fr:'Mihoub',ar:'ميهوب'},{fr:'Ain Boucif',ar:'عين بوسيف'},{fr:'El Azizia',ar:'العزيزية'},{fr:'Oum El Djalil',ar:'أم الجليل'},{fr:'Ouled Antar',ar:'أولاد عنتر'},{fr:'Aziz',ar:'عزيز'},{fr:'Djouab',ar:'الجواب'},{fr:'Tizi Mahend Ou Amar',ar:'تيزي ماهند أومر'},{fr:'Tablat',ar:'تابلاط'},{fr:'Ain Ouksir',ar:'عين أوكسير'},{fr:'El Omaria',ar:'العمارية'},{fr:'Chellalet El Adhaoura',ar:'شلالة العذاورة'},{fr:'Chahbounia',ar:'شهبونية'},{fr:'Benchicao',ar:'بنشيكاو'},{fr:'Zoubiria',ar:'الزبيرية'},{fr:'Bouskene',ar:'بوسكن'},{fr:'Tafraout',ar:'تفراوت'},{fr:'Ouled Saïd',ar:'أولاد سعيد'},{fr:'Mezerana',ar:'مزرانة'},{fr:'Seghouane',ar:'صغوان'},{fr:'Rebaia',ar:'ربايا'},{fr:'Ouled Bouachra',ar:'أولاد بوعشرة'},{fr:'Saneg',ar:'الصانق'},{fr:'Kef Lakhdar',ar:'كاف الأخضر'},{fr:'Ain Ouksir',ar:'عين أوكسير'},{fr:'Ouled Deide',ar:'أولاد ديدة'},{fr:'Draa Essamar',ar:'ذراع الأسمر'},{fr:'Sidi Naamane',ar:'سيدي نعمان'},{fr:'Si Mahdjoub',ar:'سي محجوب'},{fr:'Maghraoua',ar:'مغراوة'},{fr:'Bouchrahil',ar:'بوشراحيل'},{fr:'Sedraia',ar:'صدراية'},{fr:'Meftah',ar:'المفتاح'},{fr:'Oued Harbil',ar:'وادي حربيل'},{fr:'Boghar',ar:'بوغار'},{fr:'Goumiras',ar:'قوميرة'}],
+  27:[{fr:'Mostaganem',ar:'مستغانم'},{fr:'Ain Nouissy',ar:'عين نويصي'},{fr:'Ain Tedles',ar:'عين التدلس'},{fr:'El Hassiane',ar:'الحسيان'},{fr:'Bouguirat',ar:'بوقيرات'},{fr:'Stidia',ar:'الستيدية'},{fr:'Oued El Kheir',ar:'وادي الخير'},{fr:'Sirat',ar:'صيرات'},{fr:'Ain Sidi Cherif',ar:'عين سيدي شريف'},{fr:'Kheireddine',ar:'خير الدين'},{fr:'Mazagran',ar:'مازاغران'},{fr:'Safsaf',ar:'الصفصاف'},{fr:'Sidi Ali',ar:'سيدي علي'},{fr:'Ouled Maaref',ar:'أولاد معارف'},{fr:'Mesra',ar:'المصرى'},{fr:'Nekmaria',ar:'نقماريا'},{fr:'Sidi Lakhdar',ar:'سيدي الأخضر'},{fr:'Touahria',ar:'الطواهرية'},{fr:'Hadjadj',ar:'الحجاج'},{fr:'Mansourah',ar:'المنصورة'},{fr:'Aïn Boudinar',ar:'عين بودينار'},{fr:'Achaacha',ar:'عشعاشة'},{fr:'Kheir Eddine',ar:'خير الدين'},{fr:'Fornaka',ar:'فرناكة'}],
+  28:[{fr:"M'Sila",ar:'المسيلة'},{fr:'Ain El Melh',ar:'عين الملح'},{fr:'Bou Saada',ar:'بوسعادة'},{fr:'Djezzar',ar:'جزار'},{fr:'El Hamel',ar:'الهامل'},{fr:'Belaiba',ar:'بلعيبة'},{fr:'Ouled Derradj',ar:'أولاد دراج'},{fr:"Ouled M'Hamed",ar:'أولاد محمد'},{fr:'Sidi Aissa',ar:'سيدي عيسى'},{fr:"Ben Srour",ar:'بن سرور'},{fr:'El Houamed',ar:'الحوامد'},{fr:'Souamaa',ar:'الصوامع'},{fr:'Slim',ar:'الصليم'},{fr:'Magra',ar:'المقرة'},{fr:'Chellal',ar:'شلال'},{fr:'Aïn El Rich',ar:'عين الريش'},{fr:'Medrissa',ar:'مدريسة'},{fr:'Ben Ziad',ar:'بن زياد'},{fr:'Hamam Dhalaa',ar:'حمام الضلعة'},{fr:'Maadid',ar:'المعاضيد'},{fr:"M'Tarfa",ar:'المطارف'},{fr:'Oued Maadher',ar:'وادي المادر'},{fr:'Berhoum',ar:'برهوم'},{fr:'Bir Foda',ar:'بئر فودة'},{fr:'Sidi M\'hamed',ar:'سيدي محمد'},{fr:'Aïn El Hadjel',ar:'عين الحجل'},{fr:'Dehahna',ar:'الدهاهنة'},{fr:'Ouled Sidi Ibrahim',ar:'أولاد سيدي إبراهيم'},{fr:'Aïn Fares',ar:'عين الفارس'},{fr:'Ouled Addi Guebala',ar:'أولاد عدي قبالة'},{fr:'Ouled Slimane',ar:'أولاد سليمان'},{fr:'Beni Ilmane',ar:'بني إلمان'},{fr:'Khoubana',ar:'خوبانة'},{fr:'Aïn Khadra',ar:'عين الخضراء'}],
+  29:[{fr:'Mascara',ar:'معسكر'},{fr:'Tizi',ar:'تيزي'},{fr:'Ain Fares',ar:'عين فارس'},{fr:'Oued El Abtal',ar:'وادي العبطال'},{fr:'Ghriss',ar:'الغريس'},{fr:'Nesmoth',ar:'نسمو'},{fr:'Ain Fekan',ar:'عين فكان'},{fr:'Bou Henni',ar:'بو هني'},{fr:'Matemore',ar:'ماتمور'},{fr:'El Ghomri',ar:'الغمري'},{fr:'Beniane',ar:'بنيان'},{fr:'Khalouia',ar:'خلوية'},{fr:'Hacine',ar:'الحاسين'},{fr:'Mohammadia',ar:'المحمدية'},{fr:'Sig',ar:'سيق'},{fr:'Aïn Ferarah',ar:'عين فراح'},{fr:'Guettena',ar:'قطينة'},{fr:'El Bordj',ar:'البرج'},{fr:'Froha',ar:'فروحة'},{fr:'Zahana',ar:'زهانة'},{fr:'El Mamounia',ar:'المامونية'},{fr:'Oggaz',ar:'أقاز'},{fr:'Makdha',ar:'مقضة'},{fr:'El Haçaïba',ar:'الحصايب'},{fr:'Ferraguig',ar:'فراقيق'},{fr:'Ain Fekan',ar:'عين فكان'},{fr:'Sidi Khouiled',ar:'سيدي خويلد'},{fr:'Sidi Boussaid',ar:'سيدي بوسعيد'},{fr:'El Ghomri',ar:'الغمري'},{fr:'Aouf',ar:'عوف'},{fr:'El Keurt',ar:'القرط'},{fr:'Aïn Ferarah',ar:'عين فراح'}],
+  30:[{fr:'Ouargla',ar:'ورقلة'},{fr:'Ain Beida',ar:'عين البيضاء'},{fr:'El Borma',ar:'البرمة'},{fr:'Rouissat',ar:'الرويسات'},{fr:'El Hadjira',ar:'الحاجرة'},{fr:'Tebesbest',ar:'تبسبست'},{fr:'Megarine',ar:'المقارين'},{fr:'Sidi Slimane',ar:'سيدي سليمان'},{fr:'Hassi Messaoud',ar:'حاسي مسعود'},{fr:'Taibet',ar:'الطيبات'},{fr:'Hassi Ben Abdallah',ar:'حاسي بن عبد الله'},{fr:'Sidi Khouiled',ar:'سيدي خويلد'},{fr:'Touggourt',ar:'تقرت'},{fr:'El Hadjira',ar:'الحاجرة'},{fr:'N\'goussa',ar:'نقوسة'},{fr:'Nezla',ar:'نزلة'},{fr:'Djamaa',ar:'جامعة'},{fr:'Temacine',ar:'تماسين'},{fr:'Balidat Ameur',ar:'بالداة عمر'},{fr:'Tinfouchy',ar:'تنفوشي'},{fr:'El Allia',ar:'العالية'}],
+  31:[{fr:'Oran',ar:'وهران'},{fr:'Es Senia',ar:'السانية'},{fr:'Bir El Djir',ar:'بئر الجير'},{fr:'Hassi Ben Okba',ar:'حاسي بن عقبة'},{fr:'Hassi Mefsoukh',ar:'حاسي مفسوخ'},{fr:'Sidi Chahmi',ar:'سيدي الشحمي'},{fr:'El Kerma',ar:'الكرمة'},{fr:'El Ancor',ar:'العنصر'},{fr:'Ain El Turck',ar:'عين الترك'},{fr:'Mers El Kebir',ar:'المرسى الكبير'},{fr:'Bousfer',ar:'بوسفر'},{fr:'El Mathieu',ar:'الماتيو'},{fr:'Bethioua',ar:'بطيوة'},{fr:'Gdyel',ar:'قديل'},{fr:'Ain Kerma',ar:'عين الكرمة'},{fr:'Tafraoui',ar:'تفراوي'},{fr:'Misserghin',ar:'مسرغين'},{fr:'Boutlelis',ar:'بوتليليس'},{fr:'Oued Tlelat',ar:'وادي تليلات'},{fr:'Sidi Benyebka',ar:'سيدي بن يبقى'},{fr:'Boufatis',ar:'بوفاتيس'},{fr:'Messerghine',ar:'مسرغين'},{fr:'Ben Freha',ar:'بن فريحة'},{fr:'Ain Biya',ar:'عين البياء'},{fr:'Sidi Chami',ar:'سيدي الشحمي'}],
+  32:[{fr:'El Bayadh',ar:'البيض'},{fr:'Rogassa',ar:'رقاصة'},{fr:'Boualem',ar:'بوعلام'},{fr:'El Bnoud',ar:'البنود'},{fr:'Tousmouline',ar:'الطوسمولين'},{fr:'Brezina',ar:'بريزينة'},{fr:'Stitten',ar:'ستيتن'},{fr:'Ain El Orak',ar:'عين العراك'},{fr:'Labiodh Sidi Cheikh',ar:'لبيوض سيدي الشيخ'},{fr:'Cheguig',ar:'الشقيق'},{fr:'Sidi Slimane',ar:'سيدي سليمان'},{fr:'Krakda',ar:'كراكدة'},{fr:'Kef El Ahmar',ar:'كاف الأحمر'},{fr:'El Kheiter',ar:'الخيطر'},{fr:'Arbaouat',ar:'الأربعاوات'},{fr:'Ghassoul',ar:'الغاسول'},{fr:'El Mehara',ar:'المهارة'},{fr:'Sidi Tifour',ar:'سيدي تيفور'},{fr:'Boussemghoun',ar:'بوسمغون'},{fr:'Mehara',ar:'المهارة'},{fr:'Arbaout',ar:'أربعاوات'},{fr:'Bousemghoun',ar:'بوسمغون'},{fr:'El Mehara',ar:'المهارة'}],
+  33:[{fr:'Illizi',ar:'إليزي'},{fr:'Djanet',ar:'جانت'},{fr:'In Amenas',ar:'عين أمناس'},{fr:'Bordj Omar Driss',ar:'برج عمر إدريس'}],
+  34:[{fr:'Bordj Bou Arréridj',ar:'برج بوعريريج'},{fr:'Bir Kasd Ali',ar:'بئر قاصد علي'},{fr:'El Hamadia',ar:'الحمادية'},{fr:'Tafreg',ar:'تفرق'},{fr:'Tixter',ar:'تكسر'},{fr:'Khelil',ar:'خليل'},{fr:'Bir Ghbalou',ar:'بئر غبالو'},{fr:'El Achir',ar:'العشير'},{fr:'Bordj Ghdir',ar:'برج غدير'},{fr:'Mansourah',ar:'المنصورة'},{fr:'Hasnaoua',ar:'حسناوة'},{fr:'Djaafra',ar:'الجعافرة'},{fr:'Belimour',ar:'بليمور'},{fr:'Ouled Sidi Brahim',ar:'أولاد سيدي إبراهيم'},{fr:'El M\'hir',ar:'المهير'},{fr:'Aïn Tesra',ar:'عين تسرة'},{fr:'Colla',ar:'قلة'},{fr:'Ain Taghrout',ar:'عين تاغروت'},{fr:'Bordj Zemmoura',ar:'برج زمورة'},{fr:'El Ach',ar:'العاش'},{fr:'Ras El Oued',ar:'رأس الوادي'},{fr:'Aïn Taghrout',ar:'عين تاغروت'},{fr:'Ben Daoud',ar:'بن داود'},{fr:'Tassameurt',ar:'تاسامرت'},{fr:'Ouled Braham',ar:'أولاد براهم'},{fr:'Haraza',ar:'حرازة'}],
+  35:[{fr:'Boumerdès',ar:'بومرداس'},{fr:'Boudouaou',ar:'بودواو'},{fr:'Tidjelabine',ar:'تيجلابين'},{fr:'Chabet El Ameur',ar:'شعبة العامر'},{fr:'Thenia',ar:'الثنية'},{fr:'Beni Amrane',ar:'بني عمران'},{fr:'Si Mustapha',ar:'سي مصطفى'},{fr:'Naciria',ar:'النواصر'},{fr:'Khemis El Khechna',ar:'الخميس الخشنة'},{fr:'Ben Choud',ar:'بن شود'},{fr:'Larbaa Nath Irathen',ar:'أربعاء ناث إيراثن'},{fr:'Isser',ar:'إيسر'},{fr:'Zemmouri',ar:'زموري'},{fr:'Bordj Menaiel',ar:'برج منايل'},{fr:'Baghlia',ar:'بغلية'},{fr:'Sidi Daoud',ar:'سيدي داود'},{fr:'Taourga',ar:'تاورقة'},{fr:'Dellys',ar:'دلس'},{fr:'Afir',ar:'الأفير'},{fr:'Souk El Had',ar:'سوق الحد'},{fr:'Ben Aknoun',ar:'بن عكنون'},{fr:'Hammedi',ar:'حمادي'},{fr:'Ouled Moussa',ar:'أولاد موسى'},{fr:'Beni Slimane',ar:'بني سليمان'},{fr:'Djinet',ar:'جينات'},{fr:'Ain Taya',ar:'عين طاية'},{fr:'Boudouaou El Bahri',ar:'بودواو البحري'},{fr:'El Kharrouba',ar:'الخروبة'}],
+  36:[{fr:'El Tarf',ar:'الطارف'},{fr:'Ben Mehidi',ar:'بن مهيدي'},{fr:'Boutheldja',ar:'بوثلجة'},{fr:'Aïn El Assel',ar:'عين الأسل'},{fr:'El Kala',ar:'القالة'},{fr:'Drean',ar:'الذرعان'},{fr:'Besbes',ar:'بسباس'},{fr:'Aïn Kerma',ar:'عين الكرمة'},{fr:'Chebaita Mokhtar',ar:'الشبيطة مختار'},{fr:'El Aioun',ar:'العيون'},{fr:'Bouteldja',ar:'بوتلجة'},{fr:'Oued Ghorra',ar:'وادي غرة'},{fr:'Lac des Oiseaux',ar:'بحيرة الطيور'},{fr:'Chihani',ar:'شيحاني'},{fr:'Souarekh',ar:'سوارق'},{fr:'Zerizer',ar:'زريزر'},{fr:'Raml Souk',ar:'رمل السوق'},{fr:'Beni Mejdoub',ar:'بني مجدوب'},{fr:'Oum Teboul',ar:'أم الطبول'},{fr:'El Aouam',ar:'العوام'},{fr:'Chefia',ar:'الشافية'},{fr:'Asfour',ar:'عصفور'},{fr:'Echatt',ar:'الشط'},{fr:'Boumerchache',ar:'بومرشاش'}],
+  37:[{fr:'Tindouf',ar:'تندوف'},{fr:'Oum El Assel',ar:'أم العسل'}],
+  38:[{fr:'Tissemsilt',ar:'تيسمسيلت'},{fr:'Bordj Bounaama',ar:'برج بونعامة'},{fr:'Ammari',ar:'عمارية'},{fr:'Lardjem',ar:'لرجم'},{fr:'Theniet El Had',ar:'ثنية الحد'},{fr:'Khemisti',ar:'الخميستي'},{fr:'Lazharia',ar:'الأزهرية'},{fr:'Bouchekif',ar:'بوشقيف'},{fr:'Sidi Slimane',ar:'سيدي سليمان'},{fr:'Sidi Lantri',ar:'سيدي العنتري'},{fr:'Ouled Bessem',ar:'أولاد بسام'},{fr:'Melakou',ar:'ملاكو'},{fr:'El Brous',ar:'البروس'},{fr:'Maasem',ar:'مآسم'},{fr:'Layoune',ar:'العيون'},{fr:'Sidi Abed',ar:'سيدي عابد'},{fr:'Larbaa',ar:'الأربعاء'},{fr:'Youssoufia',ar:'اليوسفية'},{fr:'Fergous',ar:'الفرقوس'}],
+  39:[{fr:'El Oued',ar:'الوادي'},{fr:'Reguiba',ar:'الرقيبة'},{fr:'Hamraia',ar:'الحمراية'},{fr:'Taghzout',ar:'تاغزوت'},{fr:'Debila',ar:'الدبيلة'},{fr:'Hassani Abdelkrim',ar:'الحاسي عبد الكريم'},{fr:'Hassi Khalifa',ar:'حاسي خليفة'},{fr:'Trifaoui',ar:'الطريفاوي'},{fr:'Magrane',ar:'المقرن'},{fr:'Beni Guecha',ar:'بني قشة'},{fr:'Nakhla',ar:'النخلة'},{fr:'Robbah',ar:'الربة'},{fr:'Oued El Alenda',ar:'وادي العلندة'},{fr:'Bayadha',ar:'البياضة'},{fr:'Sidi Aoun',ar:'سيدي عون'},{fr:'Tending',ar:'تندين'},{fr:'Kouinine',ar:'قوينين'},{fr:'El Ogla',ar:'العقلة'},{fr:'Mih Ouensa',ar:'ميح ونسة'},{fr:'Still',ar:'الستيل'},{fr:'Guemar',ar:'قمار'},{fr:'Sidi Slimane',ar:'سيدي سليمان'},{fr:'Ain El Bayed',ar:'عين البياض'},{fr:'Douar El Maa',ar:'دوار الماء'},{fr:'Taleb Larbi',ar:'طالب العربي'},{fr:'Mrara',ar:'مرارة'},{fr:'Ourmas',ar:'أورماس'}],
+  40:[{fr:'Khenchela',ar:'خنشلة'},{fr:'Aïn Touila',ar:'عين الطويلة'},{fr:'Baghai',ar:'بقاي'},{fr:'El Hamma',ar:'الحمة'},{fr:'Kaïs',ar:'قايس'},{fr:'Babar',ar:'بابار'},{fr:'El Mahmal',ar:'المهمل'},{fr:'Tamza',ar:'تامزة'},{fr:'El Oueldja',ar:'العولجة'},{fr:'Remila',ar:'الرميلة'},{fr:'Taouzient',ar:'تاوزيانت'},{fr:'Ensigha',ar:'عينيقة'},{fr:'Khirane',ar:'الخيران'},{fr:'Djellal',ar:'جلال'},{fr:'Ouled Rechache',ar:'أولاد رشاش'},{fr:'El Oueldja',ar:'العولجة'},{fr:'Chelia',ar:'شيليا'}],
+  41:[{fr:'Souk Ahras',ar:'سوق أهراس'},{fr:'Bir Bou Houhou',ar:'بئر بو هيهو'},{fr:'Tiffech',ar:'تفاش'},{fr:'Zaarouria',ar:'الزعرورية'},{fr:'Mechroha',ar:'مشروحة'},{fr:'El Aouinet',ar:'العوينات'},{fr:'Ouillen',ar:'ويلان'},{fr:'Ain Soltane',ar:'عين السلطان'},{fr:'Ouled Moumen',ar:'أولاد مومن'},{fr:'Hanancha',ar:'الحنانشة'},{fr:'Terraguelt',ar:'تراقلة'},{fr:'Sedrata',ar:'سدراتة'},{fr:'Khedara',ar:'الخضارة'},{fr:'Merahna',ar:'مراحنة'},{fr:'Ain Zana',ar:'عين زانة'},{fr:'Safel El Ouiden',ar:'سافل الويدان'},{fr:'Ain Tahrir',ar:'عين التحرير'},{fr:'Drea',ar:'الدريعة'},{fr:'Khemissa',ar:'خميسة'},{fr:'Sidi Fredj',ar:'سيدي فرج'},{fr:'Taoura',ar:'تاورة'},{fr:'Oum El Adhaim',ar:'أم العظام'},{fr:'Aïn Seynour',ar:'عين سينور'},{fr:'Ain Zana',ar:'عين زانة'}],
+  42:[{fr:'Tipaza',ar:'تيبازة'},{fr:'Menaceur',ar:'مناصر'},{fr:'Kolea',ar:'قليعة'},{fr:'Chaiba',ar:'الشعيبة'},{fr:'Ahmeur El Ain',ar:'عمر العين'},{fr:'Bou Ismail',ar:'بوإسماعيل'},{fr:'Hadjout',ar:'الحجوط'},{fr:'Ain Tagourait',ar:'عين تاقورايت'},{fr:'Sidi Ghiles',ar:'سيدي غيلاس'},{fr:'Messelmoun',ar:'مصلمون'},{fr:'Bou Haroun',ar:'بو هارون'},{fr:'Cherchell',ar:'شرشال'},{fr:'Gouraya',ar:'قوراية'},{fr:'Damous',ar:'الدامون'},{fr:'Ain Benian',ar:'عين بنيان'},{fr:'Sidi Rached',ar:'سيدي راشد'},{fr:'Aghbal',ar:'أغبال'},{fr:'Marengo',ar:'مارنقو'},{fr:'Beni Milleuk',ar:'بني مليك'},{fr:'Oued Meurad',ar:'وادي مراد'},{fr:'Nador',ar:'النادر'},{fr:'Attatba',ar:'عطاطبة'},{fr:'Bourkika',ar:'بوركيكة'},{fr:'Khemisti',ar:'الخميستي'},{fr:'Ahmer El Ain',ar:'عمر العين'},{fr:'Bou Ismail',ar:'بوإسماعيل'},{fr:'Sidi Semiane',ar:'سيدي سميان'},{fr:'Hadjout',ar:'الحجوط'}],
+  43:[{fr:'Mila',ar:'ميلة'},{fr:'Ferdjioua',ar:'فرجيوة'},{fr:'Chelghoum Laïd',ar:'شلغوم العيد'},{fr:'Rouached',ar:'روشيد'},{fr:'Ain Beida Harriche',ar:'عين البيضاء حريش'},{fr:'Oued Athmania',ar:'وادي العثمانية'},{fr:'El Mechira',ar:'الميشيرة'},{fr:'Benyahia Abderrahmane',ar:'بن يحيى عبد الرحمن'},{fr:'Ain Tine',ar:'عين التين'},{fr:'Sidi Khelifa',ar:'سيدي خليفة'},{fr:'Terrai Bainen',ar:'تراي بينان'},{fr:'Zeghaia',ar:'زغاية'},{fr:'Elayadi Barbes',ar:'العيايدي بربس'},{fr:'Ouled Khalouf',ar:'أولاد خالوف'},{fr:'Teleghma',ar:'تلاغمة'},{fr:'Ain Mellouk',ar:'عين مرج'},{fr:'Grarem Gouga',ar:'قرارم قوقة'},{fr:'Minar Zarza',ar:'منار زرزا'},{fr:'Tadjenanet',ar:'تاجنانت'},{fr:'Hamala',ar:'حمالة'},{fr:'Sidi Merouane',ar:'سيدي مروان'},{fr:'Yabous',ar:'يابوس'},{fr:'Bouhatem',ar:'بوحاتم'},{fr:'Tessala Lamataia',ar:'تسالة لمطاعية'},{fr:'Derradji Bousselah',ar:'الدراجي بوصلاح'},{fr:'Ain Oulba',ar:'عين العلبة'},{fr:'Ain Beida Harriche',ar:'عين البيضاء حريش'},{fr:'El Ayad',ar:'العياد'},{fr:'Ben Yahia Abderrahmane',ar:'بن يحيى عبد الرحمن'},{fr:'Ahmed Rachedi',ar:'أحمد راشدي'}],
+  44:[{fr:'Aïn Defla',ar:'عين الدفلى'},{fr:'Miliana',ar:'مليانة'},{fr:'El Attaf',ar:'العطاف'},{fr:'El Abadia',ar:'العبادية'},{fr:'Rouina',ar:'رويناة'},{fr:'Bourached',ar:'بوراشد'},{fr:'Mekhatria',ar:'الماخطرية'},{fr:'Ben Allal',ar:'بن علال'},{fr:'Ain Lechiekh',ar:'عين الشيخ'},{fr:'Oued Chorfa',ar:'وادي الشرفة'},{fr:'Ain Soltane',ar:'عين السلطان'},{fr:'Djendel',ar:'الجندل'},{fr:'El Hassania',ar:'الحسنية'},{fr:'Oued Djemaa',ar:'وادي الجمعة'},{fr:'Tarik Ibn Ziad',ar:'طارق بن زياد'},{fr:'Bir Ould Khelifa',ar:'بئر ولد خليفة'},{fr:'Khemis Miliana',ar:'خميس مليانة'},{fr:'Boumedfaa',ar:'بومدفع'},{fr:'Ain Bouyahia',ar:'عين بويحيى'},{fr:'El Amra',ar:'العمرة'},{fr:'Zeddine',ar:'الزدين'},{fr:'Tiberkanine',ar:'تيبركنين'},{fr:'Bathia',ar:'باطية'},{fr:'Hammam Righa',ar:'حمام ريغة'},{fr:'Sidi Lakhdar',ar:'سيدي الأخضر'},{fr:'Bouraoui Ahmed',ar:'البراوي أحمد'},{fr:'Ain Benali',ar:'عين بن علي'},{fr:'Oued El Djemaa',ar:'وادي الجمعة'},{fr:'El Attaf',ar:'العطاف'},{fr:'Sidi Lakhdar',ar:'سيدي الأخضر'},{fr:'Bou Medfaa',ar:'بومدفع'},{fr:'Ben Allal',ar:'بن علال'},{fr:'Ain Torki',ar:'عين الترك'}],
+  45:[{fr:'Naâma',ar:'النعامة'},{fr:'Ain Sefra',ar:'عين الصفراء'},{fr:'Tiout',ar:'تيوت'},{fr:'Sfissifa',ar:'صفيصيفة'},{fr:'Moghrar',ar:'مغرار'},{fr:'Assela',ar:'عسلة'},{fr:'Djeniene Bourezg',ar:'جنين بورزق'},{fr:'El Biodh',ar:'البيوض'},{fr:'Ain Ben Khelil',ar:'عين بن خليل'},{fr:'Mécheria',ar:'المشرية'},{fr:'Kasdir',ar:'كاسدير'},{fr:'El Abiodh Sidi Cheikh',ar:'البيض سيدي الشيخ'}],
+  46:[{fr:'Aïn Témouchent',ar:'عين تموشنت'},{fr:'Ain El Arbaa',ar:'عين العربي'},{fr:'Beni Saf',ar:'بني صاف'},{fr:'Ain Laloui',ar:'عين اللوة'},{fr:'Aïn Tolba',ar:'عين الطلبة'},{fr:'Beni Lent',ar:'بني لونت'},{fr:'El Amria',ar:'العامرية'},{fr:'El Malah',ar:'الملاح'},{fr:'Ouled Kihal',ar:'أولاد كيحل'},{fr:'Hassasna',ar:'الحسنة'},{fr:'Aghlal',ar:'أغلال'},{fr:'Sidi Ben Adda',ar:'سيدي بن عدة'},{fr:'Chaabat El Lehem',ar:'شعبة اللحم'},{fr:'Tamzoura',ar:'تامزورة'},{fr:'El Messaid',ar:'المسيد'},{fr:'Oulhaça El Gheraba',ar:'وهلاصة الغرابة'},{fr:'Sidi Safi',ar:'سيدي صافي'},{fr:'Ain Kihal',ar:'عين كيحل'},{fr:'Ain Tolba',ar:'عين الطلبة'},{fr:'Ouled Boudjemaa',ar:'أولاد بوجمعة'},{fr:'El Emir Abdelkader',ar:'الأمير عبد القادر'},{fr:'Ain Sefra',ar:'عين الصفراء'},{fr:'Hassi El Ghella',ar:'حاسي الغلة'}],
+  47:[{fr:'Ghardaïa',ar:'غرداية'},{fr:'Noumerat',ar:'نومرات'},{fr:'El Guerrara',ar:'القرارة'},{fr:'Berriane',ar:'بريان'},{fr:'Daya Ben Dahoua',ar:'دهية بن دحوة'},{fr:'Zelfana',ar:'زلفانة'},{fr:'El Atteuf',ar:'العطف'},{fr:'Bounoura',ar:'بونورة'},{fr:'Metlili',ar:'متليلي'},{fr:'Hassi Gara',ar:'حاسي قارة'},{fr:'Sebseb',ar:'السبسب'},{fr:'Mansourah',ar:'المنصورة'}],
+  48:[{fr:'Relizane',ar:'غليزان'},{fr:'Djidioua',ar:'جيدوية'},{fr:'Hmadna',ar:'حمادنة'},{fr:'Mazouna',ar:'مازونة'},{fr:'Ramka',ar:'رامكة'},{fr:'El Hamadna',ar:'الحمادنة'},{fr:'Yellel',ar:'يلل'},{fr:'Souk El Had',ar:'سوق الحد'},{fr:'Ouarizane',ar:'وارزان'},{fr:'Oued El Djemaa',ar:'وادي الجمعة'},{fr:'Had Echkala',ar:'حد الشقالة'},{fr:'Ben Daoud',ar:'بن داود'},{fr:'El Matmar',ar:'المطمر'},{fr:'Bendaoud',ar:'بن داود'},{fr:'Oued Rhiou',ar:'وادي الرهيو'},{fr:'Sidi M\'hamed Ben Aouda',ar:'سيدي محمد بن علي'},{fr:'Ain Tarek',ar:'عين الطارق'},{fr:'Kalaa',ar:'القلعة'},{fr:'Mediouna',ar:'مديونة'},{fr:'Belassel Boudjelil',ar:'بلعسل بوجليل'},{fr:'Sidi Saada',ar:'سيدي سعادة'},{fr:'El Hassi',ar:'الحاسي'},{fr:'Ammi Moussa',ar:'عمي موسى'},{fr:'Oued Essalem',ar:'وادي السلام'},{fr:'Lahlef',ar:'لحلف'},{fr:'Sidi Lazreg',ar:'سيدي لازرق'},{fr:'Sidi Mohamed Benali',ar:'سيدي محمد بن علي'},{fr:'Sidi Khettab',ar:'سيدي خطاب'},{fr:'Oued Essalem',ar:'وادي السلام'}],
+  49:[{fr:'Timimoun',ar:'تيميمون'},{fr:'Aougrout',ar:'أوقروت'},{fr:'Charouine',ar:'شروين'},{fr:'Fenoughil',ar:'فنوغيل'},{fr:'Tinerkouk',ar:'تينركوك'},{fr:'Deldoul',ar:'دلدول'},{fr:'Sali',ar:'سالي'},{fr:'Metarfa',ar:'متارفة'},{fr:'Ouled Ahmed Timmi',ar:'أولاد أحمد تيمي'},{fr:'Bouda',ar:'بودة'},{fr:'Ksar Kaddour',ar:'قصر قدور'},{fr:'Tsabit',ar:'تسابيت'},{fr:'In Zghmir',ar:'إن زغمير'}],
+  50:[{fr:'Bordj Badji Mokhtar',ar:'برج باجي مختار'},{fr:'Timiaouine',ar:'تيمياوين'}],
+  51:[{fr:'Ouled Djellal',ar:'أولاد جلال'},{fr:'Sidi Khaled',ar:'سيدي خالد'},{fr:'Doucen',ar:'ذوسن'},{fr:'Ras El Miad',ar:'رأس الميعاد'},{fr:'Chaiba',ar:'الشعيبة'},{fr:'El Hadjeb',ar:'الحاجب'}],
+  52:[{fr:'Béni Abbès',ar:'بني عباس'},{fr:'El Ouata',ar:'الوطى'},{fr:'Kerzaz',ar:'قرزاز'},{fr:'Oulad Khodeir',ar:'أولاد خضير'},{fr:'Timoudi',ar:'تيمودي'},{fr:'Igli',ar:'إيقلي'},{fr:'Tamtert',ar:'تامترت'},{fr:'Tabelbala',ar:'تبلبالة'},{fr:'Taghit',ar:'تاغيت'},{fr:'Beni Ikhlef',ar:'بني إخلف'}],
+  53:[{fr:'In Salah',ar:'عين صالح'},{fr:'Foggaret Ezzaouia',ar:'فقارة الزوى'},{fr:'In Ghar',ar:'عين قار'},{fr:'In Guezzam',ar:'إن قزام'},{fr:'Aoulef',ar:'أولف'},{fr:'Tit',ar:'تيت'},{fr:'Reggane',ar:'رقان'}],
+  54:[{fr:'In Guezzam',ar:'إن قزام'},{fr:'Tin Zaouatine',ar:'تين زواطين'}],
+  55:[{fr:'Touggourt',ar:'تقرت'},{fr:'Temacine',ar:'تماسين'},{fr:'Nezla',ar:'نزلة'},{fr:'Djamaa',ar:'جامعة'},{fr:'El Hadjira',ar:'الحاجرة'},{fr:'Megarine',ar:'المقارين'},{fr:'Tebesbest',ar:'تبسبست'},{fr:'El Allia',ar:'العالية'},{fr:'Balidat Ameur',ar:'بالداة عمر'},{fr:'Taibet',ar:'الطيبات'},{fr:'Sidi Slimane',ar:'سيدي سليمان'}],
+  56:[{fr:'Djanet',ar:'جانت'},{fr:'Bordj Omar Driss',ar:'برج عمر إدريس'}],
+  57:[{fr:"El M'Ghair",ar:'المغير'},{fr:'Djamaa',ar:'جامعة'},{fr:'Oued El Alenda',ar:'وادي العلندة'},{fr:'Sidi Aoun',ar:'سيدي عون'},{fr:'Tenedla',ar:'تنادلة'},{fr:'Still',ar:'الستيل'},{fr:'Hamraia',ar:'الحمراية'},{fr:'Mih Ouensa',ar:'ميح ونسة'},{fr:'Djafra',ar:'الجفرة'},{fr:'Sidi Khellil',ar:'سيدي خليل'},{fr:'Nakhla',ar:'النخلة'},{fr:'Sidi Amar',ar:'سيدي عمار'}],
+  58:[{fr:'El Meniaa',ar:'المنيعة'},{fr:'Hassi Gara',ar:'حاسي قارة'},{fr:'Berriane',ar:'بريان'},{fr:'Zelfana',ar:'زلفانة'},{fr:'El Guerrara',ar:'القرارة'},{fr:'Touil',ar:'الطويل'},{fr:'El Abiodh',ar:'البيوض'}]
+};
+
+let data = {
+  exploitants: [
+    {id:1,nom_fr:'Benali',nom_ar:'بن علي',prenom_fr:'Ahmed',prenom_ar:'أحمد',sexe:'Masculin / ذكر',date_naissance:'1975-03-15',nin:'197503150012345',telephone:'0550123456',email:'ahmed.benali@mail.com',adresse_fr:'Tiaret',niveau:'Moyen / متوسط',formation:'Perfectionnement',assurance:'CASNOS',nature:'Propriétaire / مالك',issu_famille:true,principal:true,coexploitants:2},
+    {id:2,nom_fr:'Kaci',nom_ar:'قاسي',prenom_fr:'Fatima',prenom_ar:'فاطمة',sexe:'Féminin / أنثى',date_naissance:'1982-07-22',nin:'198207220045678',telephone:'0660456789',email:'fatima.kaci@mail.com',adresse_fr:'Sougueur',niveau:'Secondaire / ثانوي',formation:'Agent technique',assurance:'CNAS',nature:'Propriétaire / مالك',issu_famille:true,principal:true,coexploitants:1}
+  ],
+  exploitations: [
+    {id:1,nom_fr:'Ferme Benali',nom_ar:'مزرعة بن علي',exploitant_id:1,exploitant:'Benali Ahmed',wilaya_id:14,wilaya:'Tiaret',commune:'Tiaret',activite:'Mixte / مختلط',activite_id:3,statut:'Personne physique / شخص طبيعي',internet:true,elec:true,lat:35.3712,lon:1.3215,batie:120.5,non_batie:35.2,superficie_totale:35.5,parcelles:[{id:1,mode:'EAC — مستثمرة فلاحية جماعية',statut_terre:'Melk personnel titré',superficie:35.5,acte_concession:'Oui'}]},
+    {id:2,nom_fr:'Exploitation Kaci',nom_ar:'مستثمرة قاسي',exploitant_id:2,exploitant:'Kaci Fatima',wilaya_id:2,wilaya:'Chlef',commune:'Ténès',activite:'Production végétale / إنتاج نباتي',activite_id:1,statut:'Société civile / شركة مدنية',internet:true,elec:true,lat:35.1880,lon:1.2950,batie:80.3,non_batie:20.5,superficie_totale:22.0,parcelles:[{id:1,mode:'EAI — مستثمرة فلاحية فردية',statut_terre:'Melk en indivision titré',superficie:22.0,acte_concession:'Non'}]}
+  ],
+  nextExploitantId:3, nextExploitationId:3
+};
+
+let parcelleCourante = [];
+
+document.addEventListener('DOMContentLoaded', () => { populateWilayas(); populateFilterWilayas(); renderAll(); });
+
+function populateWilayas() {
+  const sel = document.getElementById('ex-wilaya');
+  WILAYAS.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w.id;
+    opt.textContent = `(${w.code}) ${w.fr} / ${w.ar}`;
+    sel.appendChild(opt);
+  });
+}
+
+function populateFilterWilayas() {
+  const sel = document.getElementById('filter-wilaya-expl');
+  if (!sel) return;
+  WILAYAS.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w.id;
+    opt.textContent = `(${w.code}) ${w.fr}`;
+    sel.appendChild(opt);
+  });
+}
+
+function filterExploitationsByWilaya(wilayaId) {
+  // Reset commune filter
+  const communeSel = document.getElementById('filter-commune-expl');
+  communeSel.innerHTML = '<option value="">Toutes les communes</option>';
+  if (wilayaId) {
+    (COMMUNES_BY_WILAYA[parseInt(wilayaId)] || []).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.fr;
+      opt.textContent = c.fr + ' / ' + c.ar;
+      communeSel.appendChild(opt);
+    });
+  }
+  applyExploitationFilters();
+}
+
+function filterExploitationsByCommune() {
+  applyExploitationFilters();
+}
+
+function applyExploitationFilters() {
+  const wilayaId = document.getElementById('filter-wilaya-expl').value;
+  const commune = document.getElementById('filter-commune-expl').value;
+  const wilayaName = wilayaId ? WILAYAS.find(w => w.id === parseInt(wilayaId))?.fr || '' : '';
+  const rows = document.querySelectorAll('#exploitations-tbody tr');
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const rowWilaya = cells[3] ? cells[3].textContent.trim() : '';
+    const rowCommune = cells[4] ? cells[4].textContent.trim() : '';
+    const wilayaMatch = !wilayaName || rowWilaya.toLowerCase().includes(wilayaName.toLowerCase());
+    const communeMatch = !commune || rowCommune.toLowerCase().includes(commune.toLowerCase());
+    row.style.display = (wilayaMatch && communeMatch) ? '' : 'none';
+  });
+}
+
+function loadCommunes(wilayaId) {
+  const sel = document.getElementById('ex-commune');
+  sel.innerHTML = '<option value="">-- Sélectionner une commune --</option>';
+  if (!wilayaId) return;
+  (COMMUNES_BY_WILAYA[parseInt(wilayaId)] || []).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.fr;
+    opt.textContent = `${c.fr} / ${c.ar}`;
+    sel.appendChild(opt);
+  });
+}
+
+function renderAll() { renderExploitants(); renderExploitations(); }
+
+const pageTitles = { campagnes:'Campagnes de Recensement — حملات الإحصاء', exploitants:'Gestion des Exploitants — إدارة المستغلين', exploitations:'Gestion des Exploitations — إدارة المستثمرات' };
+
+function showPage(name, e) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('topbar-title').textContent = pageTitles[name] || name;
+  if (e && e.currentTarget) e.currentTarget.classList.add('active');
+}
+
+let editingId = {exploitant:null, exploitation:null};
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function setModalMode(type, mode, id) { editingId[type] = (mode==='edit') ? id : null; }
+function resetParcelles() { parcelleCourante = []; afficherParcelles(); }
+
+function autocompleteExploitant(val) {
+  const drop = document.getElementById('ex-exploitant-drop');
+  if (val.length < 2) { drop.classList.remove('open'); return; }
+  const q = val.toLowerCase();
+  const matches = data.exploitants.filter(e => (e.nom_fr+' '+e.prenom_fr).toLowerCase().startsWith(q) || e.nom_fr.toLowerCase().startsWith(q));
+  drop.innerHTML = '';
+  if (!matches.length) { drop.innerHTML = '<div class="autocomplete-item" style="color:#94a3b8">Aucun résultat</div>'; }
+  else { matches.forEach(e => { const item = document.createElement('div'); item.className='autocomplete-item'; item.innerHTML=`<strong>${e.nom_fr} ${e.prenom_fr}</strong> <span class="sub">${e.nom_ar} ${e.prenom_ar} — NIN: ${e.nin}</span>`; item.onmousedown=()=>selectExploitant(e); drop.appendChild(item); }); }
+  drop.classList.add('open');
+}
+
+function selectExploitant(e) { document.getElementById('ex-exploitant-input').value=`${e.nom_fr} ${e.prenom_fr}`; document.getElementById('ex-exploitant-id').value=e.id; document.getElementById('ex-exploitant-drop').classList.remove('open'); }
+
+function delayCloseDropdown(dropId) { setTimeout(() => document.getElementById(dropId).classList.remove('open'), 200); }
+
+function ajouterParcelle() {
+  const id = Date.now() + Math.random();
+  parcelleCourante.push({id, mode:'', statut_terre:'', superficie:0, acte_concession:''});
+  afficherParcelles();
+}
+
+function supprimerParcelle(id) {
+  parcelleCourante = parcelleCourante.filter(p => p.id !== id);
+  afficherParcelles();
+}
+
+function afficherParcelles() {
+  const container = document.getElementById('parcelles-container');
+  if (parcelleCourante.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px">Aucun block/parcelle ajouté. Cliquez sur "Ajouter un block / parcelle"</div>';
+    return;
+  }
+  container.innerHTML = parcelleCourante.map((p, idx) => `
+    <div class="parcelle-item">
+      <div class="parcelle-header">
+        <span class="parcelle-title">📐 Block #${idx+1}</span>
+        <button type="button" class="btn btn-sm btn-danger" onclick="supprimerParcelle(${p.id})">🗑 Supprimer</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Mode d'exploitation</label>
+          <select class="form-control" data-id="${p.id}" data-field="mode" onchange="updateParcelle(this.dataset.id, 'mode', this.value)">
+            <option value="">-- Sélectionner --</option>
+            <option value="APFA" ${p.mode==='APFA' ? 'selected' : ''}>APFA — الاستصلاح في إطار APFA</option>
+            <option value="EAC" ${p.mode==='EAC' ? 'selected' : ''}>EAC — مستثمرة فلاحية جماعية</option>
+            <option value="EAI" ${p.mode==='EAI' ? 'selected' : ''}>EAI — مستثمرة فلاحية فردية</option>
+            <option value="Concession" ${p.mode==='Concession' ? 'selected' : ''}>Concession — امتياز فلاحي</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Statut des terres</label>
+          <select class="form-control" data-id="${p.id}" data-field="statut_terre" onchange="updateParcelle(this.dataset.id, 'statut_terre', this.value)">
+            <option value="">-- Sélectionner --</option>
+            <option value="Melk personnel titré" ${p.statut_terre==='Melk personnel titré' ? 'selected' : ''}>Melk personnel titré / ملك شخصي موثق</option>
+            <option value="Melk personnel non titré" ${p.statut_terre==='Melk personnel non titré' ? 'selected' : ''}>Melk personnel non titré / ملك شخصي غير موثق</option>
+            <option value="Domaine privé de l'État" ${p.statut_terre==="Domaine privé de l'État" ? 'selected' : ''}>Domaine privé de l'État / الملك الخاص للدولة</option>
+            <option value="Domaine public de l'État" ${p.statut_terre==="Domaine public de l'État" ? 'selected' : ''}>Domaine public de l'État / الملك العمومي للدولة</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Superficie (ha) <span style="color:red">*</span></label>
+          <input type="number" step="0.01" class="form-control" value="${p.superficie}" onchange="updateParcelle(${p.id}, 'superficie', parseFloat(this.value))">
+        </div>
+        <div class="form-group"><label class="form-label">Acte de concession</label>
+          <select class="form-control" data-id="${p.id}" data-field="acte_concession" onchange="updateParcelle(this.dataset.id, 'acte_concession', this.value)">
+            <option value="">-- Sélectionner --</option>
+            <option value="Oui" ${p.acte_concession==='Oui' ? 'selected' : ''}>Oui / نعم</option>
+            <option value="Non" ${p.acte_concession==='Non' ? 'selected' : ''}>Non / لا</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateParcelle(id, champ, valeur) {
+  const parcelle = parcelleCourante.find(p => p.id == id);
+  if (parcelle) parcelle[champ] = valeur;
+}
+
+function renderExploitants() {
+  const tbody = document.getElementById('exploitants-tbody');
+  if (!data.exploitants.length) { tbody.innerHTML='<tr><td colspan="8" class="empty-state">Aucun exploitant enregistré</td></tr>'; return; }
+  tbody.innerHTML = data.exploitants.map(e => `
+    <tr>
+      <td>${e.id}</td>
+      <td><strong>${e.nom_fr} ${e.prenom_fr}</strong><br><small style="color:#94a3b8">${e.nom_ar} ${e.prenom_ar}</small></td>
+      <td><code style="font-size:.75rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">${e.nin}</code></td>
+      <td>${e.telephone}</td>
+      <td><span class="badge badge-gray">${e.niveau}</span></td>
+      <td><span class="badge ${e.assurance==='CASNOS'?'badge-blue':'badge-green'}">${e.assurance||'—'}</span></td>
+      <td>${e.nature}</td>
+      <td><div class="action-btns">
+        <button class="btn btn-sm btn-outline" onclick="viewExploitant(${e.id})">👁</button>
+        <button class="btn btn-sm btn-outline" onclick="editExploitant(${e.id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteExploitant(${e.id})">🗑</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderExploitations() {
+  const tbody = document.getElementById('exploitations-tbody');
+  if (!data.exploitations.length) { tbody.innerHTML='<tr><td colspan="11" class="empty-state">Aucune exploitation enregistrée</td></tr>'; return; }
+  tbody.innerHTML = data.exploitations.map(e => {
+    const superficieTotale = e.parcelles ? e.parcelles.reduce((sum, p) => sum + (p.superficie || 0), 0) : 0;
+    const nbBlocks = e.parcelles ? e.parcelles.length : 0;
+    let blocksDetails = '';
+    if (e.parcelles && e.parcelles.length > 0) {
+      blocksDetails = e.parcelles.map((p, idx) => `${idx+1}:${p.superficie || 0}ha`).join(' | ');
+    }
+    return `
+    <tr>
+      <td>${e.id}</td>
+      <td><strong>${e.nom_fr}</strong><br><small style="color:#94a3b8">${e.nom_ar}</small></td>
+      <td>${e.exploitant}</td>
+      <td><span class="badge badge-gray">${e.wilaya||'—'}</span></td>
+      <td>${e.commune||'—'}</td>
+      <td><span class="badge ${e.activite_id===1?'badge-green':e.activite_id===2?'badge-orange':'badge-blue'}">${e.activite}</span></td>
+      <td><strong>${superficieTotale.toFixed(2)} ha</strong></td>
+      <td><span class="badge badge-blue">${nbBlocks} block(s)</span><br><small style="font-size:0.7rem;color:#64748b">${blocksDetails.substring(0,50)}${blocksDetails.length>50?'...':''}</small></td>
+      <td><span class="badge badge-gray">${e.statut}</span></td>
+      <td><span class="badge ${e.internet?'badge-green':'badge-gray'}">${e.internet?'✔ Oui':'✘ Non'}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-sm btn-outline" onclick="viewExploitation(${e.id})">👁</button>
+        <button class="btn btn-sm btn-outline" onclick="editExploitation(${e.id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteExploitation(${e.id})">🗑</button>
+      </div></td>
+    </tr>`}).join('');
+}
+
+function saveExploitant() {
+  const nomFr = document.getElementById('e-nom-fr').value.trim();
+  const prenomFr = document.getElementById('e-prenom-fr').value.trim();
+  const nin = document.getElementById('e-nin').value.trim();
+  if (!nomFr || !prenomFr) { showToast('Nom et prénom obligatoires !', 'error'); return; }
+  const niveauSel = document.getElementById('e-niveau');
+  const formationSel = document.getElementById('e-formation');
+  const assuranceSel = document.getElementById('e-assurance');
+  const natureSel = document.getElementById('e-nature');
+  const e = {
+    id:data.nextExploitantId++, nom_fr:nomFr, nom_ar:document.getElementById('e-nom-ar').value.trim(),
+    prenom_fr:prenomFr, prenom_ar:document.getElementById('e-prenom-ar').value.trim(),
+    sexe:document.getElementById('e-sexe').options[document.getElementById('e-sexe').selectedIndex].text,
+    date_naissance:document.getElementById('e-ddn').value, nin:nin,
+    telephone:document.getElementById('e-tel').value.trim(), email:document.getElementById('e-email').value.trim(),
+    adresse_fr:document.getElementById('e-adresse-fr').value.trim(),
+    niveau:niveauSel.options[niveauSel.selectedIndex].text,
+    formation:formationSel.options[formationSel.selectedIndex].text,
+    assurance:assuranceSel.options[assuranceSel.selectedIndex].text || '—',
+    nature:natureSel.options[natureSel.selectedIndex].text,
+    issu_famille:document.getElementById('e-famille').value==='true',
+    coexploitants:parseInt(document.getElementById('e-coexpl').value)||0,
+    principal:document.getElementById('e-principal').checked,
+  };
+  data.exploitants.push(e);
+  renderExploitants();
+  closeModal('modal-exploitant');
+  showToast('Exploitant enregistré avec succès ✔', 'success');
+  resetForm(['e-nom-fr','e-nom-ar','e-prenom-fr','e-prenom-ar','e-nin','e-tel','e-email','e-adresse-fr']);
+}
+
+function saveExploitation() {
+  const nomFr = document.getElementById('ex-nom-fr').value.trim();
+  const exploitantId = document.getElementById('ex-exploitant-id').value;
+  const wilayaSel = document.getElementById('ex-wilaya');
+  const communeSel = document.getElementById('ex-commune');
+  if (!nomFr) { showToast('Nom exploitation obligatoire !', 'error'); return; }
+  if (!exploitantId) { showToast('Veuillez sélectionner un exploitant !', 'error'); return; }
+  if (!wilayaSel.value) { showToast('Veuillez sélectionner une wilaya !', 'error'); return; }
+  const exploitant = data.exploitants.find(e => e.id == exploitantId);
+  const wilayaObj = WILAYAS.find(w => w.id==parseInt(wilayaSel.value));
+  const activiteSel = document.getElementById('ex-activite');
+  const statutSel = document.getElementById('ex-statut');
+  
+  const ex = {
+    id:data.nextExploitationId++, nom_fr:nomFr, nom_ar:document.getElementById('ex-nom-ar').value.trim(),
+    exploitant_id:parseInt(exploitantId),
+    exploitant:exploitant ? `${exploitant.nom_fr} ${exploitant.prenom_fr}` : '—',
+    wilaya_id:parseInt(wilayaSel.value), wilaya:wilayaObj ? wilayaObj.fr : '—',
+    commune:communeSel.value || '—',
+    activite:activiteSel.options[activiteSel.selectedIndex].text,
+    activite_id:parseInt(activiteSel.value),
+    statut:statutSel.options[statutSel.selectedIndex].text,
+    internet:document.getElementById('ex-internet').value==='true',
+    elec:document.getElementById('ex-elec').value==='true',
+    lat:parseFloat(document.getElementById('ex-lat').value)||0,
+    lon:parseFloat(document.getElementById('ex-lon').value)||0,
+    batie:parseFloat(document.getElementById('ex-batie').value)||0,
+    non_batie:parseFloat(document.getElementById('ex-non-batie').value)||0,
+    parcelles: parcelleCourante.filter(p => p.superficie > 0).map(p => ({
+      id: p.id,
+      mode: p.mode,
+      statut_terre: p.statut_terre,
+      superficie: p.superficie,
+      acte_concession: p.acte_concession
+    }))
+  };
+  data.exploitations.push(ex);
+  renderExploitations();
+  closeModal('modal-exploitation');
+  showToast('Exploitation enregistrée avec succès ✔', 'success');
+  parcelleCourante = [];
+  resetForm(['ex-nom-fr','ex-nom-ar','ex-exploitant-input','ex-exploitant-id']);
+}
+
+function viewExploitant(id) {
+  const e = data.exploitants.find(x => x.id===id); if (!e) return;
+  document.getElementById('detail-title').textContent = `${e.nom_fr} ${e.prenom_fr}`;
+  document.getElementById('detail-title-ar').textContent = `${e.nom_ar} ${e.prenom_ar}`;
+  document.getElementById('detail-body').innerHTML = `
+    ${row('NIN',`<code>${e.nin}</code>`)}${row('Sexe',e.sexe)}${row('Date naissance',e.date_naissance)}
+    ${row('Téléphone',e.telephone)}${row('Email',e.email)}${row('Adresse',e.adresse_fr)}
+    ${row('Niveau instruction',e.niveau)}${row('Formation agricole',e.formation)}${row('Assurance',e.assurance)}
+    ${row('Nature',e.nature)}${row('Issu famille agricole',e.issu_famille?'✔ Oui':'✘ Non')}${row('Co-exploitants',e.coexploitants)}`;
+  openModal('modal-detail');
+}
+
+function viewExploitation(id) {
+  const e = data.exploitations.find(x => x.id===id); if (!e) return;
+  let parcellesHtml = '';
+  if (e.parcelles && e.parcelles.length > 0) {
+    parcellesHtml = '<div class="form-section-title" style="margin-top:10px">📐 Blocks / Parcelles</div>';
+    e.parcelles.forEach((p, idx) => {
+      parcellesHtml += `<div class="detail-row"><span class="detail-label">Block #${idx+1}</span><span class="detail-value">Mode: ${p.mode || '—'} | Statut: ${p.statut_terre || '—'} | Superficie: ${p.superficie || 0} ha | Concession: ${p.acte_concession || '—'}</span></div>`;
+    });
+  } else {
+    parcellesHtml = '<div class="detail-row"><span class="detail-label">Blocks / Parcelles</span><span class="detail-value">Aucun block enregistré</span></div>';
+  }
+  document.getElementById('detail-title').textContent = e.nom_fr;
+  document.getElementById('detail-title-ar').textContent = e.nom_ar;
+  document.getElementById('detail-body').innerHTML = `
+    ${row('Exploitant chef',e.exploitant)}${row('Wilaya',e.wilaya)}${row('Commune',e.commune)}
+    ${row('Activité',e.activite)}${row('Statut juridique',e.statut)}
+    ${row('Électricité',e.elec?'✔ Oui':'✘ Non')}${row('Internet',e.internet?'✔ Oui':'✘ Non')}
+    ${row('Coordonnées',`Lat: ${e.lat} / Lon: ${e.lon}`)}${row('Surface bâtie (m²)',e.batie)}${row('Surface non bâtie (m²)',e.non_batie)}
+    ${parcellesHtml}`;
+  openModal('modal-detail');
+}
+
+function editExploitant(id) {
+  const e = data.exploitants.find(x => x.id===id); if (!e) return;
+  document.getElementById('e-nom-fr').value=e.nom_fr; document.getElementById('e-nom-ar').value=e.nom_ar;
+  document.getElementById('e-prenom-fr').value=e.prenom_fr; document.getElementById('e-prenom-ar').value=e.prenom_ar;
+  document.getElementById('e-nin').value=e.nin; document.getElementById('e-tel').value=e.telephone;
+  document.getElementById('e-email').value=e.email; document.getElementById('e-adresse-fr').value=e.adresse_fr;
+  document.getElementById('modal-exploitant-title').textContent=`Modifier: ${e.nom_fr} ${e.prenom_fr}`;
+  editingId.exploitant=id; openModal('modal-exploitant');
+}
+
+function editExploitation(id) {
+  const e = data.exploitations.find(x => x.id===id); if (!e) return;
+  document.getElementById('ex-nom-fr').value=e.nom_fr; document.getElementById('ex-nom-ar').value=e.nom_ar;
+  document.getElementById('ex-exploitant-input').value=e.exploitant; document.getElementById('ex-exploitant-id').value=e.exploitant_id;
+  document.getElementById('ex-wilaya').value=e.wilaya_id; loadCommunes(e.wilaya_id);
+  setTimeout(()=>{ document.getElementById('ex-commune').value=e.commune; },50);
+  document.getElementById('ex-lat').value=e.lat; document.getElementById('ex-lon').value=e.lon;
+  document.getElementById('ex-batie').value=e.batie; document.getElementById('ex-non-batie').value=e.non_batie;
+  parcelleCourante = e.parcelles ? e.parcelles.map(p => ({...p, id: p.id || Date.now()})) : [];
+  afficherParcelles();
+  document.getElementById('modal-expl2-title').textContent=`Modifier: ${e.nom_fr}`;
+  editingId.exploitation=id; openModal('modal-exploitation');
+}
+
+function deleteExploitant(id) { if (!confirm('Confirmer la suppression de cet exploitant ?')) return; data.exploitants=data.exploitants.filter(e=>e.id!==id); renderExploitants(); showToast('Exploitant supprimé','error'); }
+function deleteExploitation(id) { if (!confirm('Confirmer la suppression de cette exploitation ?')) return; data.exploitations=data.exploitations.filter(e=>e.id!==id); renderExploitations(); showToast('Exploitation supprimée','error'); }
+
+// ===== CAMPAGNES DATA =====
+data.campagnes = [
+  { id: 1, nom_fr: 'Recensement Zone Nord-Est 2026', nom_ar: 'إحصاء منطقة الشمال الشرقي 2026', annee: 2026, statut: 'ACTIF', date_debut: '2026-01-01', date_fin: '2026-12-31', desc_fr: '', wilayas: [9, 42, 19, 25], total_dossiers: 80, valides: 20 },
+  { id: 2, nom_fr: 'Recensement Agricole National 2024', nom_ar: 'الإحصاء الفلاحي الوطني 2024', annee: 2024, statut: 'CLOTURE', date_debut: '2024-01-01', date_fin: '2024-12-31', desc_fr: '', wilayas: [], total_dossiers: 120, valides: 31 }
+];
+let editingCampagneId = null;
+let selectedWilayas = [];
+
+function renderCampagnes() {
+  const grid = document.getElementById('campagnes-grid');
+  if (!data.campagnes.length) { grid.innerHTML = '<div class="empty-state">Aucune campagne enregistrée.</div>'; return; }
+  grid.innerHTML = data.campagnes.map(c => {
+    const pct = c.total_dossiers ? Math.round(c.valides / c.total_dossiers * 100) : 0;
+    const statutBadge = c.statut === 'ACTIF' ? 'badge-actif' : c.statut === 'CLOTURE' ? 'badge-cloture' : 'badge-preparation';
+    const perimetre = c.wilayas.length ? c.wilayas.map(id => { const w = WILAYAS.find(x => x.id === id); return w ? w.fr : ''; }).join(' ') : 'Portée nationale';
+    const actions = c.statut === 'ACTIF'
+      ? `<button class="btn btn-outline btn-sm" onclick="viewDossiersCampagne(${c.id})">Dossiers</button>
+         <button class="btn btn-gold btn-sm" onclick="nouveauRecensement(${c.id})">Nouveau Recensement</button>
+         <button class="btn btn-outline btn-sm" onclick="editCampagne(${c.id})">Modifier</button>
+         <button class="btn btn-outline btn-sm" onclick="cloturerCampagne(${c.id})">Cloturer</button>
+         <button class="btn btn-danger btn-sm" onclick="deleteCampagne(${c.id})">Supprimer</button>`
+      : c.statut === 'CLOTURE'
+      ? `<button class="btn btn-outline btn-sm" onclick="viewDossiersCampagne(${c.id})">Dossiers</button>
+         <button class="btn btn-outline btn-sm" onclick="editCampagne(${c.id})">Modifier</button>
+         <button class="btn btn-danger btn-sm" onclick="deleteCampagne(${c.id})">Supprimer</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="viewDossiersCampagne(${c.id})">Dossiers</button>
+         <button class="btn btn-gold btn-sm" onclick="activerCampagne(${c.id})">Activer</button>
+         <button class="btn btn-outline btn-sm" onclick="editCampagne(${c.id})">Modifier</button>
+         <button class="btn btn-danger btn-sm" onclick="deleteCampagne(${c.id})">Supprimer</button>`;
+    return `<div class="campagne-card">
+      <div class="campagne-card-header">
+        <div>
+          <div class="campagne-card-title">${c.nom_fr}</div>
+          <div class="campagne-card-year">Annee: ${c.annee}</div>
+        </div>
+        <span class="badge ${statutBadge}">${c.statut}</span>
+      </div>
+      <div class="campagne-perimetre">Périmètre territorial: <strong>${perimetre}</strong></div>
+      <div class="campagne-stats">
+        <div class="campagne-stat"><div class="val">${c.total_dossiers}</div><div class="lbl">Total dossiers</div></div>
+        <div class="campagne-stat"><div class="val">${c.valides}</div><div class="lbl">Valides</div></div>
+      </div>
+      <div class="campagne-progress"><div class="campagne-progress-bar" style="width:${pct}%"></div></div>
+      <div class="campagne-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+function setModalModeCampagne(mode, id) {
+  editingCampagneId = mode === 'edit' ? id : null;
+  selectedWilayas = [];
+  document.getElementById('modal-campagne-title').textContent = mode === 'edit' ? 'Modifier la Campagne' : 'Nouvelle Campagne';
+  ['c-nom-fr','c-nom-ar','c-annee','c-date-debut','c-date-fin','c-desc-fr','c-desc-ar'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fi = document.getElementById('c-wilaya-filter'); if (fi) fi.value = '';
+  const list = document.getElementById('c-wilaya-list'); if (list) list.style.display = 'none';
+  renderWilayaTags();
+}
+
+function saveCampagne() {
+  const nomFr = document.getElementById('c-nom-fr').value.trim();
+  const annee = parseInt(document.getElementById('c-annee').value);
+  if (!nomFr || !annee) { showToast('Nom et Annee sont obligatoires', 'error'); return; }
+  if (editingCampagneId) {
+    const c = data.campagnes.find(x => x.id === editingCampagneId);
+    if (c) { c.nom_fr = nomFr; c.nom_ar = document.getElementById('c-nom-ar').value.trim(); c.annee = annee; c.date_debut = document.getElementById('c-date-debut').value; c.date_fin = document.getElementById('c-date-fin').value; c.desc_fr = document.getElementById('c-desc-fr').value.trim(); c.desc_ar = document.getElementById('c-desc-ar').value.trim(); c.wilayas = [...selectedWilayas]; }
+  } else {
+    data.campagnes.push({ id: Date.now(), nom_fr: nomFr, nom_ar: document.getElementById('c-nom-ar').value.trim(), annee, statut: 'PREPARATION', date_debut: document.getElementById('c-date-debut').value, date_fin: document.getElementById('c-date-fin').value, desc_fr: document.getElementById('c-desc-fr').value.trim(), desc_ar: document.getElementById('c-desc-ar').value.trim(), wilayas: [...selectedWilayas], total_dossiers: 0, valides: 0 });
+  }
+  renderCampagnes();
+  closeModal('modal-campagne');
+  showToast(editingCampagneId ? 'Campagne modifiée ✔' : 'Campagne créée ✔', 'success');
+}
+
+function editCampagne(id) {
+  const c = data.campagnes.find(x => x.id === id); if (!c) return;
+  editingCampagneId = id;
+  selectedWilayas = [...c.wilayas];
+  document.getElementById('modal-campagne-title').textContent = 'Modifier la Campagne';
+  document.getElementById('c-nom-fr').value = c.nom_fr;
+  document.getElementById('c-nom-ar').value = c.nom_ar;
+  document.getElementById('c-annee').value = c.annee;
+  document.getElementById('c-date-debut').value = c.date_debut || '';
+  document.getElementById('c-date-fin').value = c.date_fin || '';
+  document.getElementById('c-desc-fr').value = c.desc_fr || '';
+  document.getElementById('c-desc-ar').value = c.desc_ar || '';
+  const fi = document.getElementById('c-wilaya-filter'); if (fi) fi.value = '';
+  const list = document.getElementById('c-wilaya-list'); if (list) list.style.display = 'none';
+  renderWilayaTags();
+  openModal('modal-campagne');
+}
+
+function activerCampagne(id) {
+  if (!confirm('Activer cette campagne ?')) return;
+  data.campagnes.forEach(c => { if (c.statut === 'ACTIF') c.statut = 'PREPARATION'; });
+  const c = data.campagnes.find(x => x.id === id); if (c) c.statut = 'ACTIF';
+  renderCampagnes(); showToast('Campagne activée ✔', 'success');
+}
+
+function cloturerCampagne(id) {
+  if (!confirm('Clôturer cette campagne ?')) return;
+  const c = data.campagnes.find(x => x.id === id); if (c) c.statut = 'CLOTURE';
+  renderCampagnes(); showToast('Campagne clôturée', '');
+}
+
+function deleteCampagne(id) {
+  if (!confirm('Supprimer cette campagne ?')) return;
+  data.campagnes = data.campagnes.filter(x => x.id !== id);
+  renderCampagnes(); showToast('Campagne supprimée', 'error');
+}
+
+function viewDossiersCampagne(id) {
+  const c = data.campagnes.find(x => x.id === id); if (!c) return;
+  showToast(`Dossiers: ${c.nom_fr} (${c.total_dossiers} total, ${c.valides} valides)`, 'success');
+}
+
+// ===== WIZARD RECENSEMENT =====
+let wizCurrentStep = 1;
+const WIZ_TOTAL = 10;
+
+function nouveauRecensement(id) {
+  const c = data.campagnes.find(x => x.id === id); if (!c) return;
+  // Set campagne name
+  document.getElementById('wiz-campagne').value = c.nom_fr;
+  // Set breadcrumb
+  document.getElementById('wiz-breadcrumb').textContent = `${c.nom_fr} > Recensements > Nouveau dossier`;
+  // Set today's date
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const yyyy = today.getFullYear();
+  document.getElementById('wiz-date-recensement').value = `${yyyy}-${mm}-${dd}`;
+  // Populate wilaya filter
+  const wSelect = document.getElementById('wiz-filter-wilaya');
+  wSelect.innerHTML = '<option value="">Toutes les wilayas</option>';
+  WILAYAS.forEach(w => { const o = document.createElement('option'); o.value = w.id; o.textContent = `(${w.code}) ${w.fr}`; wSelect.appendChild(o); });
+  // Populate exploitation dropdown
+  wizPopulateExploitations('', '', '', '');
+  // Reset to step 1
+  goWizStep(1);
+  document.getElementById('wizard-recensement').classList.add('open');
+}
+
+function wizPopulateExploitations(wilayaId, commune, nomExpl, idExpl) {
+  const sel = document.getElementById('wiz-exploitation-select');
+  sel.innerHTML = '<option value="">Selectionner une exploitation</option>';
+  data.exploitations
+    .filter(e => {
+      if (wilayaId && e.wilaya_id !== parseInt(wilayaId)) return false;
+      if (commune && !e.commune.toLowerCase().includes(commune.toLowerCase())) return false;
+      if (nomExpl && !e.nom_fr.toLowerCase().includes(nomExpl.toLowerCase())) return false;
+      if (idExpl && String(e.id) !== String(idExpl)) return false;
+      return true;
+    })
+    .forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id;
+      o.textContent = `${e.nom_fr} — ${e.wilaya} / ${e.commune}`;
+      sel.appendChild(o);
+    });
+}
+
+function wizFilterWilaya() {
+  const wilayaId = document.getElementById('wiz-filter-wilaya').value;
+  const communeSel = document.getElementById('wiz-filter-commune');
+  communeSel.innerHTML = '<option value="">Toutes les communes</option>';
+  if (wilayaId) {
+    (COMMUNES_BY_WILAYA[parseInt(wilayaId)] || []).forEach(c => {
+      const o = document.createElement('option'); o.value = c.fr; o.textContent = c.fr; communeSel.appendChild(o);
+    });
+  }
+}
+
+function wizApplyFilter() {
+  const wilayaId = document.getElementById('wiz-filter-wilaya').value;
+  const commune = document.getElementById('wiz-filter-commune').value;
+  const nomExpl = document.getElementById('wiz-filter-nom-expl').value.trim();
+  const idExpl = document.getElementById('wiz-filter-id-expl').value.trim();
+  wizPopulateExploitations(wilayaId, commune, nomExpl, idExpl);
+}
+
+function goWizStep(step) {
+  // Update pages
+  document.querySelectorAll('.wstep-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`wstep-page-${step}`).classList.add('active');
+  // Update nav buttons
+  document.querySelectorAll('.wstep-btn').forEach((btn, i) => {
+    btn.classList.remove('active','done');
+    if (i + 1 === step) btn.classList.add('active');
+    else if (i + 1 < step) btn.classList.add('done');
+  });
+  wizCurrentStep = step;
+  // Progress bar
+  const pct = Math.round((step / WIZ_TOTAL) * 100);
+  document.getElementById('wiz-progress-fill').style.width = pct + '%';
+  document.getElementById('wiz-step-label').textContent = `Etape ${step} / ${WIZ_TOTAL}`;
+  // Footer buttons
+  document.getElementById('wiz-btn-prev').style.display = step > 1 ? '' : 'none';
+  document.getElementById('wiz-btn-next').style.display = step < WIZ_TOTAL ? '' : 'none';
+  // Recap on last step
+  if (step === WIZ_TOTAL) wizBuildRecap();
+}
+
+function wizNext() {
+  if (wizCurrentStep < WIZ_TOTAL) goWizStep(wizCurrentStep + 1);
+}
+function wizPrev() {
+  if (wizCurrentStep > 1) goWizStep(wizCurrentStep - 1);
+}
+
+function wizBuildRecap() {
+  const campagne = document.getElementById('wiz-campagne').value;
+  const expl = document.getElementById('wiz-exploitation-select');
+  const explText = expl.options[expl.selectedIndex]?.text || '—';
+  const date = document.getElementById('wiz-date-recensement').value;
+  const dateDisplay = date ? date.split('-').reverse().join('/') : '—';
+  document.getElementById('wiz-recap').innerHTML = `
+    <b>Campagne :</b> ${campagne}<br>
+    <b>Exploitation :</b> ${explText}<br>
+    <b>Date recensement :</b> ${dateDisplay}<br>
+  `;
+}
+
+function wizSaveDraft() { showToast('Brouillon enregistré ✔', 'success'); }
+
+function wizSubmit() {
+  const expl = document.getElementById('wiz-exploitation-select').value;
+  if (!expl) { showToast('Veuillez sélectionner une exploitation', 'error'); goWizStep(1); return; }
+  closeWizard();
+  showToast('Recensement soumis avec succès ✔', 'success');
+}
+
+function closeWizard() {
+  document.getElementById('wizard-recensement').classList.remove('open');
+}
+
+function renderWilayaList(filter = '') {
+  const list = document.getElementById('c-wilaya-list');
+  if (!list) return;
+  const q = filter.toLowerCase();
+  const filtered = WILAYAS.filter(w => !q || w.fr.toLowerCase().includes(q) || w.ar.includes(q) || w.code.includes(q));
+  list.innerHTML = filtered.map(w => {
+    const selected = selectedWilayas.includes(w.id);
+    return `<div onclick="toggleWilaya(${w.id})" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:.88rem;color:${selected?'var(--primary)':'var(--text)'};background:${selected?'#f0faf1':'#fff'};transition:background .1s" onmouseover="this.style.background='${selected?'#e6f7e9':'#f8fafc'}'" onmouseout="this.style.background='${selected?'#f0faf1':'#fff'}'">
+      <span>${w.fr}</span>
+      ${selected ? '<span style="color:var(--primary);font-weight:700;font-size:1rem">✓</span>' : ''}
+    </div>`;
+  }).join('');
+  updateWilayaCount();
+}
+
+function toggleWilayaDropdown() {
+  const list = document.getElementById('c-wilaya-list');
+  const isOpen = list.style.display === 'block';
+  if (!isOpen) { renderWilayaList((document.getElementById('c-wilaya-filter')||{}).value||''); list.style.display = 'block'; }
+  else { list.style.display = 'none'; }
+}
+
+function filterWilayaList(q) {
+  const list = document.getElementById('c-wilaya-list');
+  if (list && list.style.display === 'block') renderWilayaList(q);
+}
+
+function toggleWilaya(id) {
+  if (selectedWilayas.includes(id)) selectedWilayas = selectedWilayas.filter(x => x !== id);
+  else selectedWilayas.push(id);
+  const q = (document.getElementById('c-wilaya-filter')||{}).value || '';
+  renderWilayaList(q);
+  renderWilayaTags();
+  updateWilayaCount();
+}
+
+function selectAllWilayas() {
+  const q = (document.getElementById('c-wilaya-filter')||{}).value || '';
+  const filtered = WILAYAS.filter(w => !q || w.fr.toLowerCase().includes(q.toLowerCase()) || w.ar.includes(q));
+  filtered.forEach(w => { if (!selectedWilayas.includes(w.id)) selectedWilayas.push(w.id); });
+  renderWilayaList(q); renderWilayaTags();
+}
+
+function clearAllWilayas() {
+  selectedWilayas = [];
+  const q = (document.getElementById('c-wilaya-filter')||{}).value || '';
+  renderWilayaList(q); renderWilayaTags();
+}
+
+function updateWilayaCount() {
+  const el = document.getElementById('c-wilaya-count');
+  if (el) el.textContent = `${selectedWilayas.length} / ${WILAYAS.length} sélectionnées`;
+}
+
+function renderWilayaTags() {
+  const container = document.getElementById('c-wilaya-tags');
+  if (!container) return;
+  if (!selectedWilayas.length) {
+    container.style.color = 'var(--text-muted)';
+    container.innerHTML = 'Portée nationale';
+    return;
+  }
+  container.style.color = 'var(--text)';
+  container.innerHTML = selectedWilayas.map(id => {
+    const w = WILAYAS.find(x => x.id === id);
+    return w ? `<span class="wilaya-tag">${w.code} ${w.fr}<span class="rm" onclick="toggleWilaya(${id})">✕</span></span>` : '';
+  }).join('');
+  updateWilayaCount();
+}
+
+// Init campagnes on load
+renderCampagnes();
+
+function filterTable(tbodyId,q,cols) {
+  const rows=document.querySelectorAll(`#${tbodyId} tr`);
+  const ql=q.toLowerCase();
+  rows.forEach(row=>{ const cells=row.querySelectorAll('td'); const match=cols.some(i=>cells[i]&&cells[i].textContent.toLowerCase().includes(ql)); row.style.display=match?'':'none'; });
+}
+
+function showToast(msg,type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+function resetForm(ids) { ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+});
+
+document.getElementById('wizard-recensement').addEventListener('click', e => {
+  if (e.target === document.getElementById('wizard-recensement')) closeWizard();
+});
+</script>
+</body>
+</html>

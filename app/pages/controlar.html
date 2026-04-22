@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المراقبة والتحقق - النظام الوطني للإحصاء الفلاحي 2025</title>
+    
+    <!-- Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Chart.js للرسوم البيانية -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+   <link rel="stylesheet" href="../css/main.css">
+</head>
+<body dir="rtl">
+
+    <!-- شاشة الافتتاحية -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <h1 class="splash-title" data-i18n="splash.title">النظام الوطني للإحصاء الفلاحي</h1>
+            <p class="splash-subtitle" data-i18n="splash.subtitle">الجمهورية الجزائرية الديمقراطية الشعبية</p>
+            <div class="splash-loader">
+                <div class="splash-progress" id="splashProgress"></div>
+            </div>
+            <div class="splash-text" id="splashText" data-i18n="splash.loading">جاري تحميل النظام...</div>
+        </div>
+    </div>
+
+  
+    
+
+    <!-- لوحة الإشعارات المنبثقة -->
+    <div class="notifications-panel" id="notificationsPanel" style="display: none;">
+        <div class="notifications-header">
+            <h3 data-i18n="ctrl.notifications">الإشعارات</h3>
+        </div>
+        <div id="notificationsList"></div>
+    </div>
+
+    <!-- الحاوية الرئيسية -->
+    <div class="main-container">
+        <!-- القائمة الجانبية -->
+        <div class="sidebar">
+            <h2 data-i18n="ctrl.sidebarTitle">قائمة المراقب</h2>
+            
+            <div class="menu-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-home"></i> <span data-i18n="ctrl.dashboard">لوحة التحكم</span>
+            </div>
+            <div class="menu-item" onclick="showPage('pending')">
+                <i class="fas fa-clock"></i> <span data-i18n="ctrl.pendingFiles">الملفات قيد الانتظار</span>
+                <span class="badge" id="pendingCount">0</span>
+            </div>
+            <div class="menu-item" onclick="showPage('approved')">
+                <i class="fas fa-check-circle"></i> <span data-i18n="ctrl.approvedFiles">الملفات المقبولة</span>
+                <span class="badge" id="approvedCount">0</span>
+            </div>
+            <div class="menu-item" onclick="showPage('rejected')">
+                <i class="fas fa-times-circle"></i> <span data-i18n="ctrl.rejectedFiles">الملفات المرفوضة</span>
+                <span class="badge" id="rejectedCount">0</span>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-item" onclick="showPage('history')">
+                <i class="fas fa-history"></i> <span data-i18n="ctrl.reviewLog">سجل المراجعات</span>
+            </div>
+            <div class="menu-item" onclick="showPage('stats')">
+                <i class="fas fa-chart-bar"></i> <span data-i18n="ctrl.verificationStats">إحصائيات التحقق</span>
+            </div>
+             
+            <div class="menu-divider"></div>
+            
+             <button onclick="window.location.href='profile.html'" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid #D4AF37;background:transparent;color:#1C4B2D;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;margin-bottom:10px;" onmouseover="this.style.background='rgba(212,175,55,0.12)'" onmouseout="this.style.background='transparent'">
+                <i class="fas fa-user-circle" style="color:#3b5543;"></i>
+                <span data-ar="ملفي الشخصي" data-fr="Mon Profil">ملفي الشخصي</span>
+            </button>
+            
+            <button id="langToggleBtn" onclick="toggleLang()" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid var(--primary,#4a7c59);background:transparent;color:var(--primary,#4a7c59);cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;">
+                <i class="fas fa-language"></i>
+                <span id="langBtnLabel">Français</span>
+            </button>
+        
+            <button id="deconnexionBtn" onclick="deconnexion()" style="width:100%;padding:8px 12px;border-radius:20px;border:2px solid #e53e3e;background:transparent;color:#e53e3e;cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;transition:all 0.3s;margin-top:12px;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span data-ar="تسجيل الخروج" data-fr="Déconnexion">تسجيل الخروج</span>
+            </button>
+
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="content" style="margin-left: 30px;">
+            <div id="mainContent"></div>
+        </div>
+    </div>
+
+    <!-- نافذة المراجعة (قبول/رفض) -->
+    <div class="review-modal" id="reviewModal">
+        <div class="review-content">
+            <div class="review-header">
+                <h3 id="reviewTitle" data-i18n="ctrl.reviewFile">مراجعة الملف</h3>
+                <p id="reviewFarmerName"></p>
+            </div>
+            
+            <div class="review-form-group">
+                <label data-i18n="ctrl.reviewNotes">ملاحظات المراجعة</label>
+                <textarea class="review-form-control" id="reviewNotes" data-i18n-placeholder="ctrl.reviewNotesPlaceholder" placeholder="أدخل ملاحظاتك حول هذا الملف..."></textarea>
+            </div>
+            
+            <div class="review-form-group">
+                <label data-i18n="ctrl.rejectReasonLabel">سبب الرفض (في حالة الرفض)</label>
+                <select class="review-form-control" id="rejectReason">
+                    <option value="" data-i18n="ctrl.selectRejectReason">اختر سبب الرفض</option>
+                    <option value="بيانات ناقصة" data-i18n="ctrl.reason.incomplete">بيانات ناقصة</option>
+                    <option value="بيانات غير صحيحة" data-i18n="ctrl.reason.incorrect">بيانات غير صحيحة</option>
+                    <option value="ملف مكرر" data-i18n="ctrl.reason.duplicate">ملف مكرر</option>
+                    <option value="اشتباه في تزوير" data-i18n="ctrl.reason.fraud">اشتباه في تزوير</option>
+                    <option value="سبب آخر" data-i18n="ctrl.reason.other">سبب آخر</option>
+                </select>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-approve" onclick="confirmApprove()">
+                    <i class="fas fa-check-circle"></i> <span data-i18n="ctrl.approveFile">قبول الملف</span>
+                </button>
+                <button class="btn btn-reject" onclick="confirmReject()">
+                    <i class="fas fa-times-circle"></i> <span data-i18n="ctrl.rejectFile">رفض الملف</span>
+                </button>
+                <button class="btn btn-edit" onclick="closeReviewModal()">
+                    <i class="fas fa-times"></i> <span data-i18n="ctrl.cancel">إلغاء</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل الملف -->
+    <div class="details-modal" id="detailsModal">
+        <div class="details-content">
+            <div class="details-header">
+                <div style="font-size: 24px; font-weight: 800;" id="detailsName"></div>
+                <div id="detailsId"></div>
+            </div>
+            
+            <div id="detailsContent"></div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-view" onclick="closeDetailsModal()">
+                    <i class="fas fa-times"></i> <span data-i18n="ctrl.close">إغلاق</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/control.js"></script>
+</body>
+</html>
