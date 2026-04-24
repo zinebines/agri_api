@@ -27,10 +27,11 @@ function ynL(val) {
 }
 function undL(val) { return val || L('غير محدد', 'Non défini'); }
 
-// إذا لم توجد حملات، أنشئ حملة افتراضية
+// NOTE: old campaigns array kept for survey file linkage (campaignId references)
+// Campaign creation/display is now handled by campagnesData in the HTML (agri system)
+// We do NOT auto-create a default campaign here to avoid conflicts
 if (campaigns.length === 0) {
-    campaigns.push({ id: Date.now(), name: L("الحملة التجريبية 2026", "Campagne pilote 2026"), region: L("الجزائر", "Algérie"), startDate: new Date().toISOString(), status: "active", description: L("حملة إحصاء تجريبية", "Campagne de recensement pilote"), createdAt: new Date().toISOString() });
-    localStorage.setItem("campaigns", JSON.stringify(campaigns));
+    // No default campaign — use the campagnesData system in the page instead
 }
 
 // ============================================
@@ -49,20 +50,19 @@ function showToast(message, type) {
 
 let currentActivePage = 'dashboard';
 
+
 function showPage(pageId) {
     currentActivePage = pageId;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
+    const pageEl = document.getElementById(pageId);
+    if (pageEl) pageEl.classList.add('active');
     if (pageId === 'exploitants') renderExploitantsList();
     if (pageId === 'exploitations') renderExploitationsList();
-    if (pageId === 'campaigns') { renderCampaignsList(); updateCampaignsStats(); }
+    if (pageId === 'campaigns') {
+        if (typeof renderCampagnes === 'function') renderCampagnes();
+    }
     if (pageId === 'drafts') renderDrafts();
     if (pageId === 'dashboard') updateDashboardStats();
-    if (pageId === 'campaigns') {
-    renderCampaignsList();
-    updateCampaignsStats();
-    updateActiveCampaignBar();  
-}
 }
 
 function updateDashboardStats() {
@@ -538,32 +538,26 @@ function saveSurveyFile() {
 }
 
 // ============================================
-// إدارة الحملات
+// إدارة الحملات — delegated to campagne system (agri)
 // ============================================
 function renderCampaignsList() {
-    let container = document.getElementById("campaignsList");
-    if(!container) return;
-    if(campaigns.length === 0) { container.innerHTML = `<div style='text-align:center;padding:60px;'>${L('لا توجد حملات', 'Aucune campagne')}</div>`; return; }
-    container.innerHTML = campaigns.map(c => `
-        <div class="file-card pending" style="margin-bottom:15px;padding:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
-                <div><i class="fas fa-chart-line"></i> <strong>${c.name}</strong><br><small>${c.region || L("كل التراب", "Tout le territoire")} | ${new Date(c.startDate).toLocaleDateString(dateLocaleStr())}</small></div>
-                <div><button class="btn btn-sm btn-primary" onclick="selectCampaign(${c.id})">${L('فتح', 'Ouvrir')}</button> <button class="btn btn-sm btn-danger" onclick="deleteCampaign(${c.id})">${L('حذف', 'Supprimer')}</button></div>
-            </div>
-        </div>
-    `).join('');
+    // Delegated to renderCampagnes() injected from agri.html campagne system
+    if (typeof renderCampagnes === 'function') renderCampagnes();
 }
 
 function selectCampaign(id) {
-    let campaign = campaigns.find(c => c.id == id);
-    if (campaign.status === 'completed') {
-        showToast(L("لا يمكن فتح حملة مكتملة. الحملة مغلقة.", "Impossible d'ouvrir une campagne terminée."), "warning");
+    // Try new campagnesData first, fall back to old campaigns array
+    let campaign = (typeof campagnesData !== 'undefined' ? campagnesData : campaigns).find(c => c.id == id);
+    if (!campaign) return;
+    if (campaign.statut === 'CLOTURE' || campaign.status === 'completed') {
+        showToast(L("لا يمكن فتح حملة مكتملة. الحملة مغلقة.", "Impossible d'ouvrir une campagne terminée."), "error");
         return;
     }
-    
     currentCampaignId = id;
-    document.getElementById("campaignDetailsTitle").innerHTML = campaign.name;
-    document.getElementById("campaignDetailsDesc").innerHTML = campaign.description || L("لا يوجد وصف", "Pas de description");
+    let titleEl = document.getElementById("campaignDetailsTitle");
+    let descEl = document.getElementById("campaignDetailsDesc");
+    if (titleEl) titleEl.innerHTML = campaign.nom_fr || campaign.name || '';
+    if (descEl) descEl.innerHTML = campaign.desc_fr || campaign.description || L("لا يوجد وصف", "Pas de description");
     renderCampaignFilesList(id);
     showPage('campaignDetails');
 }
@@ -603,6 +597,8 @@ function deleteSurveyFile(id) {
 }
 
 function deleteCampaign(id) {
+    // Delegate to new campagne system
+    if (typeof deleteCampagne === 'function') { deleteCampagne(id); return; }
     if(!confirm(L("سيتم حذف جميع ملفات الإحصاء المرتبطة!", "Tous les dossiers associés seront supprimés !"))) return;
     farmers = farmers.filter(f => f.campaignId != id);
     campaigns = campaigns.filter(c => c.id != id);
@@ -614,11 +610,19 @@ function deleteCampaign(id) {
 }
 
 function showCreateCampaignForm() {
-    showCreateCampaignModal();
+    // Delegate to new campagne modal system
+    if (typeof openModal === 'function') {
+        openModal('modal-campagne');
+        if (typeof setModalModeCampagne === 'function') setModalModeCampagne('add');
+    }
 }
 
 function updateCampaignsStats() {
-    document.getElementById("campaignsCount").textContent = campaigns.length;
+    let total = (typeof campagnesData !== 'undefined' ? campagnesData : campaigns).length;
+    let totalElement = document.getElementById("campaignsCount");
+    if (totalElement) totalElement.textContent = total;
+    let activeElement = document.getElementById("activeCampaignsCount");
+    if (activeElement) activeElement.textContent = total;
 }
 
 // ============================================
@@ -655,6 +659,8 @@ document.addEventListener("DOMContentLoaded", function() {
     showPage('dashboard');
     updateDashboardStats();
     updateExploitantsSelects();
+    // Initialize new campagne grid if available
+    if (typeof renderCampagnes === 'function') renderCampagnes();
 });
 // ============================================
 // بروفايل المستغل (الفلاح) - جميع الحقول 1-31
@@ -1752,4 +1758,7 @@ function applyLang(lang) {
         updateDashboardStats();
     }
 }
-sh
+function updateActiveCampaignBar(pageId) {
+    console.log("تم تغيير الصفحة إلى: " + pageId);
+    // يمكنك لاحقاً إضافة كود هنا لتغيير عنوان الصفحة تلقائياً
+}// تعريف الدالة المفقودة لمنع توقف الكود

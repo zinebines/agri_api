@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recensement Agricole — Gestion</title>
-<style>
+<style /* هذا الكود يضمن وجود مسافة للكتابة داخل المربعات */
+input {
+    padding-left: 45px !important;
+}
+
+/* لجعل الأيقونات تظهر بشكل متناسق داخل المربعات */
+.relative i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}>
   :root {
     --primary: #2d7a3a;
     --primary-dark: #1f5c2a;
@@ -777,7 +789,7 @@
       </div>
       <div class="wizard-footer-right">
         <button class="btn-wiz-draft" onclick="wizSaveDraft()">Enregistrer brouillon</button>
-        <button class="btn-wiz-submit" id="wiz-btn-submit" onclick="wizSubmit()">Soumettre</button>
+        <button class="btn-wiz-submit" id="wiz-btn-submit" style="display:none" onclick="wizSubmit()">Soumettre</button>
         <button class="btn-wiz-quit" onclick="closeWizard()">Quitter</button>
       </div>
     </div>
@@ -1251,8 +1263,7 @@ function renderCampagnes() {
       ? `<button class="btn btn-outline btn-sm" onclick="viewDossiersCampagne(${c.id})">Dossiers</button>
          <button class="btn btn-gold btn-sm" onclick="nouveauRecensement(${c.id})">Nouveau Recensement</button>
          <button class="btn btn-outline btn-sm" onclick="editCampagne(${c.id})">Modifier</button>
-         <button class="btn btn-outline btn-sm" onclick="cloturerCampagne(${c.id})">Cloturer</button>
-         <button class="btn btn-danger btn-sm" onclick="deleteCampagne(${c.id})">Supprimer</button>`
+         <button class="btn btn-outline btn-sm" onclick="cloturerCampagne(${c.id})">Cloturer</button>`
       : c.statut === 'CLOTURE'
       ? `<button class="btn btn-outline btn-sm" onclick="viewDossiersCampagne(${c.id})">Dossiers</button>
          <button class="btn btn-outline btn-sm" onclick="editCampagne(${c.id})">Modifier</button>
@@ -1430,6 +1441,7 @@ function goWizStep(step) {
   // Footer buttons
   document.getElementById('wiz-btn-prev').style.display = step > 1 ? '' : 'none';
   document.getElementById('wiz-btn-next').style.display = step < WIZ_TOTAL ? '' : 'none';
+  document.getElementById('wiz-btn-submit').style.display = step === WIZ_TOTAL ? '' : 'none';
   // Recap on last step
   if (step === WIZ_TOTAL) wizBuildRecap();
 }

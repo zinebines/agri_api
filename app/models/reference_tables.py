@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String
 from app.config.database import Base
 
 
+# ── Tables existantes (inchangées) ───────────────────────────────────────────
+
 class Sexe(Base):
     __tablename__ = "sexe"
     id = Column(Integer, primary_key=True)
@@ -92,3 +94,55 @@ class Wilaya(Base):
     code = Column(String(10), unique=True)
     nom_fr = Column(String(150))
     nom_ar = Column(String(150))
+
+
+# ── Nouvelles tables référencées par recensement.py ──────────────────────────
+# Ajoutées depuis AgriDB.txt pour résoudre NoReferencedTableError
+
+class TypeCulture(Base):
+    __tablename__ = "type_culture"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(100), nullable=False)
+    nom_ar = Column(String(100))
+
+
+class ModeIrrigation(Base):
+    __tablename__ = "mode_irrigation"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(100), nullable=False)
+    nom_ar = Column(String(100))
+
+
+class SourceEau(Base):
+    __tablename__ = "source_eau"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(150), nullable=False)
+    nom_ar = Column(String(150))
+
+
+class SystemeIrrigation(Base):
+    __tablename__ = "systeme_irrigation"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(100), nullable=False)
+    nom_ar = Column(String(100))
+
+
+class SourceFinancement(Base):
+    __tablename__ = "source_financement"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(150), nullable=False)
+    nom_ar = Column(String(150))
+
+
+class TypeAssuranceAgricole(Base):
+    __tablename__ = "type_assurance_agricole"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(100), nullable=False)
+    nom_ar = Column(String(100))
+
+
+class ModeCommercialisation(Base):
+    __tablename__ = "mode_commercialisation"
+    id = Column(Integer, primary_key=True)
+    nom_fr = Column(String(100), nullable=False)
+    nom_ar = Column(String(100))
